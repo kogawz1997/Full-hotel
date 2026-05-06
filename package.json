@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
-    "check": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
-    "demo": "cp .env.demo .env.local && echo '\u2705 Demo env set \u2014 run: npm run dev'",
+    "check": "npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
+    "demo": "cp .env.demo .env.local && echo '✅ Demo env set — run: npm run dev'",
     "backup": "node scripts/backup-supabase.mjs",
     "check:env": "node scripts/check-production-env.mjs",
     "smoke": "node scripts/smoke-test.mjs",
@@ -31,7 +31,8 @@
     "deploy:check": "node scripts/check-deploy-targets.mjs",
     "deploy:local": "node -e \"console.log('Use scripts/deploy-local.sh on macOS/Linux or scripts/deploy-local.ps1 on Windows')\"",
     "deploy:docker": "docker compose up --build",
-    "verify:deploy": "npm run final:verify && npm run deploy:check"
+    "verify:deploy": "npm run final:verify && npm run deploy:check",
+    "check:strict": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",

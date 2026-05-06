@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getPaymentAdapter } from '@/lib/payments';
 import { parseJson } from '@/lib/http/validation';
 import { assertReservationAccess } from '@/lib/auth/guards';
-import { rateLimit, requireProductionSecret } from '@/lib/security/rate-limit';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 const schema = z.object({
   reservationId: z.string().uuid(),
@@ -19,8 +19,12 @@ export async function POST(request: Request) {
     const limited = await rateLimit(request, 'payments.charge', 20, 60_000);
     if (limited) return limited;
 
-    const missingGateway = requireProductionSecret('OMISE_SECRET_KEY');
-    if (missingGateway) return missingGateway;
+    if (!process.env.OMISE_SECRET_KEY || process.env.OMISE_SECRET_KEY.includes('demo')) {
+      return NextResponse.json(
+        { error: 'Payment service not configured', code: 'PAYMENT_NOT_CONFIGURED' },
+        { status: 503 }
+      );
+    }
 
     const parsed = await parseJson(request, schema);
     if (parsed.error) return parsed.error;
