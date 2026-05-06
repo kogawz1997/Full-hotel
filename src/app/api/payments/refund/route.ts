@@ -42,36 +42,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Refund amount (${amount}) exceeds paid amount (${reservation.paid_amount})` }, { status: 400 });
   }
 
-  // Call Omise refund API
-  // Production safety: never silently mock payments
-  if (process.env.NODE_ENV === 'production' && !process.env.OMISE_SECRET_KEY) {
+  // Fail closed: never silently mock refunds
+  if (!process.env.OMISE_SECRET_KEY || process.env.OMISE_SECRET_KEY.includes('demo')) {
     return NextResponse.json(
-      { error: 'ระบบชำระเงินยังไม่ได้ตั้งค่า กรุณาติดต่อผู้ดูแลระบบ', code: 'PAYMENT_NOT_CONFIGURED' },
+      { error: 'Payment service not configured', code: 'PAYMENT_NOT_CONFIGURED' },
       { status: 503 }
     );
   }
-  let refundResult: any = { id: `mock_refund_${Date.now()}`, status: 'pending' };
-
-  if (process.env.OMISE_SECRET_KEY && !process.env.OMISE_SECRET_KEY.includes('demo')) {
-    try {
-      const omiseRes = await fetch(
-        `https://api.omise.co/charges/${reservation.omise_charge_id}/refunds`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Basic ${Buffer.from(process.env.OMISE_SECRET_KEY + ':').toString('base64')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ amount: Math.round(amount * 100) }), // Omise uses satang
-        }
-      );
-      refundResult = await omiseRes.json();
-      if (!omiseRes.ok) {
-        return NextResponse.json({ error: refundResult.message || 'Omise refund failed' }, { status: 400 });
+  let refundResult: any;
+  try {
+    const omiseRes = await fetch(
+      `https://api.omise.co/charges/${reservation.omise_charge_id}/refunds`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${Buffer.from(process.env.OMISE_SECRET_KEY + ':').toString('base64')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ amount: Math.round(amount * 100) }), // Omise uses satang
       }
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    );
+    refundResult = await omiseRes.json();
+    if (!omiseRes.ok) {
+      return NextResponse.json({ error: refundResult.message || 'Omise refund failed' }, { status: 400 });
     }
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 
   // Update reservation

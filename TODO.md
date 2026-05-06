@@ -3,8 +3,8 @@
 ## 🔴 Sprint 1 — ทำก่อน launch
 
 - [x] **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
-- [ ] **Reset password page** → สร้าง `src/app/portal/reset-password/page.tsx`
-- [ ] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
+- [x] **Reset password page** → สร้าง `src/app/portal/reset-password/page.tsx`
+- [x] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
 - [x] **Terms of Service** → สร้าง `src/app/terms/page.tsx`
 - [x] **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
 - [ ] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
@@ -23,14 +23,14 @@
 - [x] **Price graph** → สร้าง `src/components/booking/price-graph.tsx`
 - [x] **Photo lightbox** → สร้าง `src/components/ui/lightbox.tsx`
 - [x] **Urgency indicators** → แก้ booking-engine.tsx เพิ่ม "เหลือ X ห้อง"
-- [ ] **Guest AI chatbot** → สร้าง `src/components/booking/guest-chat-widget.tsx`
+- [x] **Guest AI chatbot** → สร้าง `src/components/booking/guest-chat-widget.tsx`
 
 ## 🟢 Sprint 4 — Scale & Legal
 
 - [ ] **Subscription billing** → สร้าง `src/app/dashboard/billing/page.tsx` + Stripe integration
-- [ ] **Cookie consent banner** → สร้าง `src/components/ui/cookie-consent.tsx`
+- [x] **Cookie consent banner** → สร้าง `src/components/ui/cookie-consent.tsx`
 - [ ] **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`
-- [ ] **Sentry** → install `@sentry/nextjs` + config files
+- [x] **Sentry** → install `@sentry/nextjs` + config files
 - [ ] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
 - [ ] **PWA manifest** → สร้าง `public/manifest.json` + icons
 - [ ] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
@@ -40,10 +40,10 @@
 - [ ] **F&B POS** → สร้าง `src/app/dashboard/fb/menu/`, `fb/orders/`
 - [ ] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
 - [ ] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
-- [ ] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
+- [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
 - [ ] **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
 - [ ] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
-- [ ] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
+- [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
 ## ENV vars ที่ยังขาด
 ```
@@ -84,8 +84,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ## 🔴 P1 Critical — ทำก่อนรับเงิน
 
 ### Availability & Status
-- [ ] **Fix: booking ต้อง `pending_payment` ก่อน** → `src/app/api/reservations/route.ts` บรรทัด `status: 'confirmed'` → เปลี่ยนเป็น `pending_payment` ถ้ายังไม่ได้จ่าย
-- [ ] **Fix: availability เช็ค `pending_payment` ด้วย** → `src/app/api/public/availability/route.ts` เพิ่ม `pending_payment` ใน `.in('status', [...])`
+- [x] **Fix: booking ต้อง `pending_payment` ก่อน** → `src/app/api/reservations/route.ts` บรรทัด `status: 'confirmed'` → เปลี่ยนเป็น `pending_payment` ถ้ายังไม่ได้จ่าย
+- [x] **Fix: availability เช็ค `pending_payment` ด้วย** → `src/app/api/public/availability/route.ts` เพิ่ม `pending_payment` ใน `.in('status', [...])`
 - [ ] **Overbooking lock** → สร้าง `src/lib/booking/availability-lock.ts` (Postgres advisory lock)
 - [ ] **Cancellation policy engine** → สร้าง `src/lib/booking/cancellation-policy.ts`
 
@@ -200,14 +200,14 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ## 🟠 ขาดฝั่งลูกค้า — ทำเร็ว (1-2 วัน)
 
 ### Payment States (Critical)
-- [ ] `src/app/booking/[slug]/success/page.tsx` — หน้า payment สำเร็จ + booking code
-- [ ] `src/app/booking/[slug]/pending/page.tsx` — รอชำระ PromptPay/transfer
-- [ ] `src/app/booking/[slug]/failed/page.tsx` — ชำระไม่สำเร็จ + retry
+- [x] `src/app/booking/[slug]/success/page.tsx` — หน้า payment สำเร็จ + booking code
+- [x] `src/app/booking/[slug]/pending/page.tsx` — รอชำระ PromptPay/transfer
+- [x] `src/app/booking/[slug]/failed/page.tsx` — ชำระไม่สำเร็จ + retry
 
 ### Guest Portal
 - [ ] Cancel booking button + confirmation modal ใน `src/app/portal/bookings/page.tsx`
 - [ ] Download receipt PDF link ใน portal
-- [ ] Forgot password page `src/app/portal/forgot-password/page.tsx`
+- [x] Forgot password page `src/app/portal/forgot-password/page.tsx`
 - [ ] Write review after checkout (rating + comment form)
 
 ### Hotel Detail (/h/[slug])
