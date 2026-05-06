@@ -29,7 +29,7 @@ AI-first · Multi-tenant SaaS · Guest Portal · Channel Manager · e-Tax · ท
 
 ---
 
-## ภาพรวม
+## ภาพรวม   
 
 Maitri คือ **Hotel PMS แบบ SaaS สำหรับตลาดไทย** รวมทุกสิ่งที่โรงแรมต้องการในที่เดียว — จัดการห้องพัก รับจอง ออกใบกำกับภาษีอิเล็กทรอนิกส์ ส่ง ทร.30 อัตโนมัติ ตอบแขกด้วย AI ใน LINE/WhatsApp และมีหน้า Booking Engine + Guest Portal สำหรับแขกจองตรง
 
