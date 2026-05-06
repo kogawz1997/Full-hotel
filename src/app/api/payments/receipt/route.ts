@@ -1,0 +1,85 @@
+/**
+ * Payment Receipt API
+ * Returns receipt data for a reservation (used to render PDF)
+ */
+import { NextRequest, NextResponse } from 'next/server';
+import { requireHotelAccess } from '@/lib/auth/guards';
+import { createAdminClient } from '@/lib/supabase/server';
+import { format } from 'date-fns';
+import { th } from 'date-fns/locale';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const reservationId = searchParams.get('id') || '';
+  const hotelId       = searchParams.get('hotelId') || '';
+
+  const ctx = await requireHotelAccess(hotelId);
+  if (ctx.error) return ctx.error;
+
+  const admin = createAdminClient();
+
+  const { data: res } = await admin
+    .from('reservations')
+    .select(`
+      *, guests(first_name, last_name, email, phone, nationality),
+      rooms(room_number, floor),
+      room_types(name),
+      hotels(name, address, phone, email, vat_rate, tax_id),
+      folio_items(*)
+    `)
+    .eq('id', reservationId)
+    .eq('hotel_id', hotelId)
+    .single();
+
+  if (!res) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+
+  const hotel  = res.hotels as any;
+  const guest  = res.guests as any;
+  const folioItems: any[] = res.folio_items || [];
+
+  const subtotal   = folioItems.filter(f => f.amount > 0).reduce((s, f) => s + Number(f.amount), 0);
+  const refunds    = folioItems.filter(f => f.amount < 0).reduce((s, f) => s + Number(f.amount), 0);
+  const vatAmount  = subtotal * (Number(hotel?.vat_rate) || 0.07);
+  const totalDue   = subtotal + vatAmount + refunds;
+
+  return NextResponse.json({
+    receiptNumber: `REC-${res.reservation_code}`,
+    issuedAt: format(new Date(), "d MMMM yyyy 'เวลา' HH:mm", { locale: th }),
+    hotel: {
+      name: hotel?.name,
+      address: hotel?.address,
+      phone: hotel?.phone,
+      email: hotel?.email,
+      taxId: hotel?.tax_id,
+    },
+    guest: {
+      name: `${guest?.first_name} ${guest?.last_name || ''}`.trim(),
+      email: guest?.email,
+      phone: guest?.phone,
+    },
+    reservation: {
+      code: res.reservation_code,
+      checkIn:  res.check_in,
+      checkOut: res.check_out,
+      nights:   res.nights,
+      roomType: (res.room_types as any)?.name,
+      roomNumber: (res.rooms as any)?.room_number,
+      numAdults: res.num_adults,
+    },
+    lineItems: folioItems.map(f => ({
+      description: f.description,
+      amount:      Number(f.amount),
+      type:        f.item_type,
+    })),
+    summary: {
+      subtotal: Math.round(subtotal * 100) / 100,
+      vatRate: (Number(hotel?.vat_rate) || 0.07) * 100,
+      vatAmount: Math.round(vatAmount * 100) / 100,
+      refunds: Math.round(refunds * 100) / 100,
+      total: Math.round(totalDue * 100) / 100,
+      paid: Number(res.paid_amount),
+      balance: Math.round((totalDue - Number(res.paid_amount)) * 100) / 100,
+    },
+    paymentStatus: res.payment_status,
+  });
+}
