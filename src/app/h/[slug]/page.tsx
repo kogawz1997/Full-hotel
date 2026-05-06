@@ -11,12 +11,17 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
   const supabase = createAdminClient();
   const { data: h } = await supabase.from('hotels').select('name,description,hero_image_url,city').eq('slug', slug).single();
   if (!h) return {};
   return {
+    metadataBase: new URL(appUrl),
     title: `${h.name} — จองห้องพักออนไลน์`,
     description: h.description || `จองห้องพักที่ ${h.name} ${h.city} ราคาดีที่สุด`,
+    alternates: {
+      canonical: `/h/${slug}`,
+    },
     openGraph: {
       title: `${h.name}`,
       description: h.description || `ที่พักใน ${h.city}`,

@@ -259,6 +259,9 @@ export function MyBookingsClient({ guest }: { guest: any }) {
                           <Star className="h-3.5 w-3.5" /> รีวิว
                         </button>
                       )}
+                      <a href={`/api/guest/bookings/${b.id}/receipt`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-black/10 rounded-lg hover:bg-black/5 transition-colors">
+                        <Download className="h-3.5 w-3.5" /> ใบเสร็จ
+                      </a>
                       <Link href={`/portal/bookings/qr?code=${b.reservation_code}`}
                         className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-black/10 rounded-lg hover:bg-black/5 transition-colors">
                         <QrCode className="h-3.5 w-3.5" /> QR
