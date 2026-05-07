@@ -23,6 +23,7 @@ export default function LoginPage() {
       const supabase = createClient();
       const result = await Promise.race([
         supabase.auth.signInWithPassword({ email, password }),
+codex/fix-login-hanging-issue-5f3cqo
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 15000),
         ),
@@ -32,12 +33,10 @@ export default function LoginPage() {
         toast.error(result.error.message);
         return;
       }
-
       const [{ data: staffProfile }, { data: guestAccount }] = await Promise.all([
         supabase.from('user_profiles').select('id').eq('id', result.data.user.id).maybeSingle(),
         supabase.from('guest_accounts').select('id').eq('id', result.data.user.id).maybeSingle(),
       ]);
-
       toast.success('ยินดีต้อนรับกลับ');
 
       if (staffProfile) {
