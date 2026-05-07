@@ -1,0 +1,135 @@
+# TODO Alignment Check (May 7, 2026)
+
+ตรวจเฉพาะ TODO ที่อ้างพาธไฟล์โดยตรงในเครื่อง
+
+- Line 5 [x] OK: **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
+  - `src/app/api/reservations/route.ts`: FOUND
+- Line 6 [x] OK: **Reset password page** → สร้าง `src/app/portal/reset-password/page.tsx`
+  - `src/app/portal/reset-password/page.tsx`: FOUND
+- Line 7 [x] OK: **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
+  - `src/app/portal/wishlist/page.tsx`: FOUND
+  - `src/app/api/guest/wishlist/route.ts`: FOUND
+- Line 8 [x] OK: **Terms of Service** → สร้าง `src/app/terms/page.tsx`
+  - `src/app/terms/page.tsx`: FOUND
+- Line 9 [x] OK: **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
+  - `src/app/privacy/page.tsx`: FOUND
+- Line 14 [x] OK: **Onboarding wizard** → สร้าง `src/app/onboarding/` (3 steps)
+  - `src/app/onboarding/`: FOUND
+- Line 15 [x] OK: **Rate calendar UI** → สร้าง `src/app/dashboard/rates/page.tsx`
+  - `src/app/dashboard/rates/page.tsx`: FOUND
+- Line 16 [x] OK: **Room type images** → แก้ `src/components/dashboard/rooms-client.tsx` + upload API
+  - `src/components/dashboard/rooms-client.tsx`: FOUND
+- Line 17 [x] OK: **Cancellation email** → แก้ `src/app/api/guest/bookings/[id]/route.ts`
+  - `src/app/api/guest/bookings/[id]/route.ts`: FOUND
+- Line 22 [x] OK: **Search page** → สร้าง `src/app/search/page.tsx` + `src/app/api/public/search/route.ts`
+  - `src/app/search/page.tsx`: FOUND
+  - `src/app/api/public/search/route.ts`: FOUND
+- Line 23 [x] OK: **Price graph** → สร้าง `src/components/booking/price-graph.tsx`
+  - `src/components/booking/price-graph.tsx`: FOUND
+- Line 24 [x] OK: **Photo lightbox** → สร้าง `src/components/ui/lightbox.tsx`
+  - `src/components/ui/lightbox.tsx`: FOUND
+- Line 26 [x] OK: **Guest AI chatbot** → สร้าง `src/components/booking/guest-chat-widget.tsx`
+  - `src/components/booking/guest-chat-widget.tsx`: FOUND
+- Line 30 [ ] OK: **Subscription billing** → สร้าง `src/app/dashboard/billing/page.tsx` + Stripe integration
+  - `src/app/dashboard/billing/page.tsx`: FOUND
+- Line 31 [x] OK: **Cookie consent banner** → สร้าง `src/components/ui/cookie-consent.tsx`
+  - `src/components/ui/cookie-consent.tsx`: FOUND
+- Line 32 [ ] OK: **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`
+  - `src/app/api/guest/export/route.ts`: FOUND
+- Line 33 [x] MISMATCH: **Sentry** → install `@sentry/nextjs` + config files
+  - `@sentry/nextjs`: MISSING
+- Line 34 [ ] OK: **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
+  - `src/lib/security/rate-limit.ts`: FOUND
+- Line 35 [ ] OK: **PWA manifest** → สร้าง `public/manifest.json` + icons
+  - `public/manifest.json`: FOUND
+- Line 36 [x] OK: **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
+  - `src/app/h/[slug]/opengraph-image.tsx`: FOUND
+- Line 40 [ ] MISMATCH: **F&B POS** → สร้าง `src/app/dashboard/fb/menu/`, `fb/orders/`
+  - `src/app/dashboard/fb/menu/`: FOUND
+  - `fb/orders/`: MISSING
+- Line 41 [ ] MISMATCH: **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
+  - `src/app/dashboard/spa/services/`: FOUND
+  - `spa/bookings/`: MISSING
+- Line 42 [ ] OK: **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
+  - `src/app/dashboard/maintenance/page.tsx`: FOUND
+- Line 43 [x] OK: **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
+  - `src/lib/currency.ts`: FOUND
+- Line 44 [x] MISMATCH: **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
+  - `src/app/portal/bookings/[code]/qr/page.tsx`: MISSING
+- Line 45 [ ] OK: **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
+  - `src/app/api/storage/optimize/route.ts`: FOUND
+- Line 46 [x] OK: **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
+  - `supabase/migrations/00006_performance_indexes.sql`: FOUND
+- Line 87 [x] OK: **Fix: booking ต้อง `pending_payment` ก่อน** → `src/app/api/reservations/route.ts` บรรทัด `status: 'confirmed'` → เปลี่ยนเป็น `pending_payment` ถ้ายังไม่ได้จ่าย
+  - `src/app/api/reservations/route.ts`: FOUND
+- Line 88 [x] OK: **Fix: availability เช็ค `pending_payment` ด้วย** → `src/app/api/public/availability/route.ts` เพิ่ม `pending_payment` ใน `.in('status', [...])`
+  - `src/app/api/public/availability/route.ts`: FOUND
+- Line 89 [x] OK: **Overbooking lock** → สร้าง `src/lib/booking/availability-lock.ts` (Postgres advisory lock)
+  - `src/lib/booking/availability-lock.ts`: FOUND
+- Line 90 [x] OK: **Cancellation policy engine** → สร้าง `src/lib/booking/cancellation-policy.ts`
+  - `src/lib/booking/cancellation-policy.ts`: FOUND
+- Line 93 [x] OK: **BookingStepper** → `src/components/booking/BookingStepper.tsx`
+  - `src/components/booking/BookingStepper.tsx`: FOUND
+- Line 94 [x] OK: **BookingSummary** → `src/components/booking/BookingSummary.tsx`
+  - `src/components/booking/BookingSummary.tsx`: FOUND
+- Line 95 [x] OK: **GuestForm (Zod)** → `src/components/booking/GuestForm.tsx`
+  - `src/components/booking/GuestForm.tsx`: FOUND
+- Line 96 [x] OK: **PaymentMethodCard** → `src/components/booking/PaymentMethodCard.tsx`
+  - `src/components/booking/PaymentMethodCard.tsx`: FOUND
+- Line 97 [x] OK: **ConfirmationCard** → `src/components/booking/ConfirmationCard.tsx`
+  - `src/components/booking/ConfirmationCard.tsx`: FOUND
+- Line 98 [x] OK: **Deposit flow API** → `src/app/api/payments/deposit/route.ts`
+  - `src/app/api/payments/deposit/route.ts`: FOUND
+- Line 103 [x] OK: `src/components/luxury/LuxuryButton.tsx`
+  - `src/components/luxury/LuxuryButton.tsx`: FOUND
+- Line 104 [x] OK: `src/components/luxury/LuxuryCard.tsx`
+  - `src/components/luxury/LuxuryCard.tsx`: FOUND
+- Line 105 [x] OK: `src/components/luxury/LuxurySection.tsx`
+  - `src/components/luxury/LuxurySection.tsx`: FOUND
+- Line 106 [x] OK: `src/components/luxury/LuxuryInput.tsx`
+  - `src/components/luxury/LuxuryInput.tsx`: FOUND
+- Line 107 [x] OK: `src/components/luxury/LuxuryBadge.tsx`
+  - `src/components/luxury/LuxuryBadge.tsx`: FOUND
+- Line 108 [x] OK: `src/components/public/SearchHeader.tsx`
+  - `src/components/public/SearchHeader.tsx`: FOUND
+- Line 109 [x] MISMATCH: `src/components/public/HotelCard.tsx`
+  - `src/components/public/HotelCard.tsx`: MISSING
+- Line 110 [x] OK: `src/components/public/RoomCard.tsx`
+  - `src/components/public/RoomCard.tsx`: FOUND
+- Line 111 [x] OK: `src/components/public/FilterDrawer.tsx`
+  - `src/components/public/FilterDrawer.tsx`: FOUND
+- Line 112 [x] MISMATCH: `src/components/public/LuxuryGallery.tsx`
+  - `src/components/public/LuxuryGallery.tsx`: MISSING
+- Line 113 [x] OK: `src/components/public/ReviewCard.tsx`
+  - `src/components/public/ReviewCard.tsx`: FOUND
+- Line 114 [x] OK: `src/components/public/StickyBookingBar.tsx`
+  - `src/components/public/StickyBookingBar.tsx`: FOUND
+- Line 151 [x] MISMATCH: **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`
+  - `@hookform/resolvers`: MISSING
+- Line 183 [x] OK: เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`
+  - `src/app/api/payments/refund/route.ts`: FOUND
+- Line 184 [x] OK: เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`
+  - `src/app/api/payments/deposit/route.ts`: FOUND
+- Line 185 [x] OK: เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
+  - `src/app/api/payments/charge/route.ts`: FOUND
+- Line 203 [x] OK: `src/app/booking/[slug]/success/page.tsx` — หน้า payment สำเร็จ + booking code
+  - `src/app/booking/[slug]/success/page.tsx`: FOUND
+- Line 204 [x] OK: `src/app/booking/[slug]/pending/page.tsx` — รอชำระ PromptPay/transfer
+  - `src/app/booking/[slug]/pending/page.tsx`: FOUND
+- Line 205 [x] OK: `src/app/booking/[slug]/failed/page.tsx` — ชำระไม่สำเร็จ + retry
+  - `src/app/booking/[slug]/failed/page.tsx`: FOUND
+- Line 208 [x] OK: Cancel booking button + confirmation modal ใน `src/app/portal/bookings/page.tsx`
+  - `src/app/portal/bookings/page.tsx`: FOUND
+- Line 210 [x] OK: Forgot password page `src/app/portal/forgot-password/page.tsx`
+  - `src/app/portal/forgot-password/page.tsx`: FOUND
+- Line 225 [ ] MISMATCH: `src/components/public/HotelCard.tsx` — ย้าย HotelCard ออกจาก search/page.tsx
+  - `src/components/public/HotelCard.tsx`: MISSING
+- Line 226 [x] OK: `src/components/public/TrustBadges.tsx` — SSL, Secure Payment, Verified Hotel
+  - `src/components/public/TrustBadges.tsx`: FOUND
+- Line 230 [x] OK: `src/app/sitemap.ts`
+  - `src/app/sitemap.ts`: FOUND
+- Line 231 [x] OK: `src/app/robots.ts`
+  - `src/app/robots.ts`: FOUND
+
+Total file-referenced TODO items: 62
+Mismatches (missing referenced files): 8

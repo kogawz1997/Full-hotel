@@ -41,34 +41,30 @@ export async function POST(request: NextRequest) {
 
   const depositAmount = Math.round(Number(res.total_amount) * (depositPercent / 100));
 
-  // Charge via Omise
-  // Production safety: never silently mock payments
-  if (process.env.NODE_ENV === 'production' && !process.env.OMISE_SECRET_KEY) {
+  // Fail closed: never silently mock payments
+  if (!process.env.OMISE_SECRET_KEY || process.env.OMISE_SECRET_KEY.includes('demo')) {
     return NextResponse.json(
-      { error: 'ระบบชำระเงินยังไม่ได้ตั้งค่า กรุณาติดต่อผู้ดูแลระบบ', code: 'PAYMENT_NOT_CONFIGURED' },
+      { error: 'Payment service not configured', code: 'PAYMENT_NOT_CONFIGURED' },
       { status: 503 }
     );
   }
-  let chargeResult: any = { id: `deposit_${Date.now()}`, status: 'successful' };
-  if (process.env.OMISE_SECRET_KEY && !process.env.OMISE_SECRET_KEY.includes('demo')) {
-    const omiseRes = await fetch('https://api.omise.co/charges', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${Buffer.from(process.env.OMISE_SECRET_KEY + ':').toString('base64')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount: depositAmount * 100,  // satang
-        currency: 'thb',
-        card: token,
-        description: `Deposit ${depositPercent}% — ${res.reservation_code}`,
-        metadata: { reservation_id: reservationId, type: 'deposit' },
-      }),
-    });
-    chargeResult = await omiseRes.json();
-    if (!omiseRes.ok || chargeResult.status === 'failed') {
-      return NextResponse.json({ error: chargeResult.failure_message || 'Payment failed' }, { status: 402 });
-    }
+  const omiseRes = await fetch('https://api.omise.co/charges', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${Buffer.from(process.env.OMISE_SECRET_KEY + ':').toString('base64')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      amount: depositAmount * 100,  // satang
+      currency: 'thb',
+      card: token,
+      description: `Deposit ${depositPercent}% — ${res.reservation_code}`,
+      metadata: { reservation_id: reservationId, type: 'deposit' },
+    }),
+  });
+  const chargeResult: any = await omiseRes.json();
+  if (!omiseRes.ok || chargeResult.status === 'failed') {
+    return NextResponse.json({ error: chargeResult.failure_message || 'Payment failed' }, { status: 402 });
   }
 
   // Update reservation

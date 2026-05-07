@@ -11,12 +11,17 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
   const supabase = createAdminClient();
   const { data: h } = await supabase.from('hotels').select('name,description,hero_image_url,city').eq('slug', slug).single();
   if (!h) return {};
   return {
+    metadataBase: new URL(appUrl),
     title: `${h.name} — จองห้องพักออนไลน์`,
     description: h.description || `จองห้องพักที่ ${h.name} ${h.city} ราคาดีที่สุด`,
+    alternates: {
+      canonical: `/h/${slug}`,
+    },
     openGraph: {
       title: `${h.name}`,
       description: h.description || `ที่พักใน ${h.city}`,
@@ -62,9 +67,38 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
   } : null;
 
   const minRate = roomTypes?.length ? Math.min(...roomTypes.map((r: any) => Number(r.base_rate))) : 0;
+  const hotelJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Hotel',
+    name: hotel.name,
+    description: hotel.description || undefined,
+    image: hotel.hero_image_url || undefined,
+    telephone: hotel.phone || undefined,
+    email: hotel.email || undefined,
+    address: hotel.address
+      ? {
+          '@type': 'PostalAddress',
+          streetAddress: hotel.address,
+          addressLocality: hotel.city || undefined,
+          addressCountry: 'TH',
+        }
+      : undefined,
+    aggregateRating: avgRating
+      ? {
+          '@type': 'AggregateRating',
+          ratingValue: Number(avgRating.toFixed(1)),
+          reviewCount: reviews?.length || 0,
+        }
+      : undefined,
+    priceRange: minRate ? `THB ${Math.round(minRate).toLocaleString()}+` : undefined,
+  };
 
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelJsonLd) }}
+      />
       {/* Sticky nav */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -127,6 +161,57 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
                 <p className="text-[#2A2522]/70 leading-relaxed">{hotel.description}</p>
               </div>
             )}
+
+            {/* Policies */}
+            <div className="border-b border-black/8 pb-8" id="policies">
+              <h2 className="text-lg font-bold text-[#2A2522] mb-4">นโยบายที่พัก</h2>
+              <div className="grid sm:grid-cols-2 gap-4 text-sm text-[#2A2522]/70">
+                <div className="p-4 rounded-xl bg-[#FAF7F2]">
+                  <p className="font-semibold text-[#2A2522] mb-1">เวลาเช็คอิน / เช็คเอาท์</p>
+                  <p>เช็คอิน: {hotel.check_in_time || '14:00'} น.</p>
+                  <p>เช็คเอาท์: {hotel.check_out_time || '12:00'} น.</p>
+                </div>
+                <div className="p-4 rounded-xl bg-[#FAF7F2]">
+                  <p className="font-semibold text-[#2A2522] mb-1">นโยบายการยกเลิก</p>
+                  <p>ยกเลิกฟรีก่อนวันเช็คอินอย่างน้อย 24 ชั่วโมง</p>
+                </div>
+                <div className="p-4 rounded-xl bg-[#FAF7F2]">
+                  <p className="font-semibold text-[#2A2522] mb-1">เด็กและเตียงเสริม</p>
+                  <p>รองรับผู้เข้าพักได้สูงสุดตามประเภทห้องพัก</p>
+                </div>
+                <div className="p-4 rounded-xl bg-[#FAF7F2]">
+                  <p className="font-semibold text-[#2A2522] mb-1">สัตว์เลี้ยง</p>
+                  <p>กรุณาติดต่อโรงแรมล่วงหน้าเพื่อยืนยันเงื่อนไข</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Nearby places */}
+            <div className="border-b border-black/8 pb-8" id="nearby">
+              <h2 className="text-lg font-bold text-[#2A2522] mb-4">สถานที่ใกล้เคียง</h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                {[`แหล่งท่องเที่ยวหลักใน${hotel.city || 'พื้นที่ใกล้เคียง'}`, 'ร้านอาหารยอดนิยม', 'ศูนย์การค้า', 'สถานีขนส่ง / รถไฟฟ้า'].map((place) => (
+                  <div key={place} className="p-4 rounded-xl border border-black/10 bg-white text-sm text-[#2A2522]/70">
+                    <p className="font-medium text-[#2A2522]">{place}</p>
+                    <p className="text-xs mt-1">ระยะทางโดยประมาณ 1–3 กม.</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Map */}
+            <div className="border-b border-black/8 pb-8" id="map">
+              <h2 className="text-lg font-bold text-[#2A2522] mb-4">แผนที่</h2>
+              <div className="rounded-2xl overflow-hidden border border-black/10">
+                <iframe
+                  title={`Map of ${hotel.name}`}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${hotel.name} ${hotel.address || hotel.city || ''}`)}&output=embed`}
+                  className="w-full h-80"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              </div>
+            </div>
 
             {/* Room types */}
             {roomTypes && roomTypes.length > 0 && (
