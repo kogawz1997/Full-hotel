@@ -33,7 +33,7 @@
 - [x] **Sentry** → install `@sentry/nextjs` + config files
 - [ ] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
 - [ ] **PWA manifest** → สร้าง `public/manifest.json` + icons
-- [ ] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
+- [x] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
 
 ## ⚡ Sprint 5 — Full features
 
