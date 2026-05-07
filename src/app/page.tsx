@@ -357,6 +357,62 @@ export default function HomePage() {
         </div>
       </section>
 
+
+
+      {/* ─── Destination + Featured + Trust ───────────────────────────── */}
+      <section className="py-20 bg-white">
+        <div className="container max-w-7xl px-4 space-y-14">
+          <div>
+            <h2 className="font-serif text-3xl md:text-4xl mb-6">จุดหมายยอดนิยมในไทย</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { city: 'Bangkok', emoji: '🏙️' },
+                { city: 'Chiang Mai', emoji: '⛰️' },
+                { city: 'Phuket', emoji: '🏝️' },
+                { city: 'Koh Samui', emoji: '🌅' },
+              ].map((d) => (
+                <Link key={d.city} href={`/search?city=${encodeURIComponent(d.city)}`} className="rounded-2xl border border-black/10 p-5 hover:border-[#C66A30]/50 transition-colors">
+                  <div className="text-3xl mb-2">{d.emoji}</div>
+                  <p className="font-semibold text-[#2A2522]">{d.city}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-serif text-2xl mb-4">ที่พักแนะนำ</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { name: 'Riverside Boutique', city: 'Chiang Mai', rating: '4.8' },
+                { name: 'Azure Bay Resort', city: 'Phuket', rating: '4.9' },
+                { name: 'The Old Town House', city: 'Bangkok', rating: '4.7' },
+              ].map((h) => (
+                <div key={h.name} className="rounded-2xl bg-[#FAF7F2] border border-black/5 p-5">
+                  <p className="font-semibold">{h.name}</p>
+                  <p className="text-sm text-[#2A2522]/60">{h.city} · ⭐ {h.rating}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-serif text-2xl mb-4">ทำไมต้องจองกับเรา</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                'ชำระเงินปลอดภัย พร้อม SSL และ PromptPay',
+                'โรงแรมผ่านการยืนยันตัวตนและรีวิวจริง',
+                'ทีมซัพพอร์ตภาษาไทย ตอบไวทุกวัน',
+              ].map((reason) => (
+                <div key={reason} className="rounded-2xl border border-black/10 p-5 text-sm text-[#2A2522]/80">
+                  <ShieldCheck className="h-5 w-5 text-[#C66A30] mb-2" />
+                  {reason}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── Testimonials ────────────────────────────────────────────────── */}
       <section id="reviews" className="py-24 bg-[#2A2522]">
         <div className="container max-w-7xl px-4">

@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatCurrency, cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
-import { Search, MapPin, Star, Filter, X, ChevronDown, Users, Calendar, SlidersHorizontal, Heart } from 'lucide-react';
-import { WishlistButton } from '@/components/ui/wishlist-button';
+import { Search, Filter, X, ChevronDown, Users, Calendar, SlidersHorizontal, Heart } from 'lucide-react';
+import { HotelCard } from '@/components/public/HotelCard';
 
 const HOTEL_TYPES = [
   { value: '', label: 'ทุกประเภท' },
@@ -46,6 +46,7 @@ function SearchContent() {
   const [total, setTotal] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
 
   const search = useCallback(async (q = query) => {
     setLoading(true);
@@ -65,6 +66,15 @@ function SearchContent() {
 
   useEffect(() => {
     if (searchParams.get('city') || searchParams.get('checkIn')) search();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('recently_viewed_hotels');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) setRecentlyViewed(parsed);
+    } catch {}
   }, []);
 
   function doSearch() {
@@ -205,82 +215,34 @@ function SearchContent() {
                 <HotelCard key={hotel.id} hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
               ))}
             </div>
+
+            {hotels.length > 0 && (
+              <div className="mt-10">
+                <h3 className="text-lg font-semibold text-[#2A2522] mb-3">🔥 Last-minute deals</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {hotels
+                    .filter(h => typeof h.min_rate === 'number' && h.min_rate > 0)
+                    .sort((a, b) => a.min_rate - b.min_rate)
+                    .slice(0, 3)
+                    .map(hotel => (
+                      <HotelCard key={`deal-${hotel.id}`} hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {recentlyViewed.length > 0 && (
+              <div className="mt-10">
+                <h3 className="text-lg font-semibold text-[#2A2522] mb-3">👀 Recently viewed hotels</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recentlyViewed.slice(0, 3).map((hotel) => (
+                    <HotelCard key={`recent-${hotel.id ?? hotel.slug}`} hotel={hotel} checkIn={query.checkIn} checkOut={query.checkOut} />
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-function HotelCard({ hotel, nights, checkIn, checkOut }: any) {
-  const [imgIdx, setImgIdx] = useState(0);
-  const imgs = hotel.gallery || [];
-  const heroImg = imgs[imgIdx]?.image_url || hotel.hero_image_url;
-
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-black/5 group hover:shadow-md transition-shadow">
-      {/* Image */}
-      <div className="relative h-52 bg-[#FAF7F2] overflow-hidden">
-        {heroImg ? (
-          <img src={heroImg} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl text-[#2A2522]/10 font-serif">
-            {hotel.name?.charAt(0)}
-          </div>
-        )}
-        {/* Image dots */}
-        {imgs.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {imgs.slice(0, 4).map((_: any, i: number) => (
-              <button key={i} onClick={() => setImgIdx(i)}
-                className={cn('h-1.5 rounded-full transition-all', i === imgIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/60')} />
-            ))}
-          </div>
-        )}
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
-          {hotel.type && <span className="text-2xs bg-white/90 text-[#2A2522] px-2 py-0.5 rounded-full font-medium capitalize">{hotel.type.replace('_', ' ')}</span>}
-        </div>
-        <div className="absolute top-3 right-3">
-          <WishlistButton hotelId={hotel.id} />
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#2A2522] truncate">{hotel.name}</h3>
-            {hotel.city && <p className="text-xs text-[#2A2522]/40 flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" />{hotel.city}</p>}
-          </div>
-          {hotel.avg_rating && (
-            <div className="flex items-center gap-1 shrink-0 ml-2">
-              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-              <span className="text-sm font-bold text-[#2A2522]">{hotel.avg_rating}</span>
-              {hotel.review_count > 0 && <span className="text-xs text-[#2A2522]/30">({hotel.review_count})</span>}
-            </div>
-          )}
-        </div>
-
-        {hotel.tagline && <p className="text-xs text-[#2A2522]/50 line-clamp-1 mb-2">{hotel.tagline}</p>}
-
-        <div className="flex items-end justify-between mt-3">
-          <div>
-            {hotel.min_rate ? (
-              <>
-                <span className="text-xs text-[#2A2522]/40">เริ่มต้น</span>
-                <div className="font-bold text-lg text-[#2A2522]">{formatCurrency(hotel.min_rate)}</div>
-                <span className="text-xs text-[#2A2522]/40">/ คืน · รวม VAT</span>
-              </>
-            ) : (
-              <span className="text-xs text-[#2A2522]/40">ไม่มีห้องว่าง</span>
-            )}
-          </div>
-          <Link href={`/booking/${hotel.slug}?checkIn=${checkIn}&checkOut=${checkOut}`}
-            className="px-4 py-2 bg-[#C66A30] hover:bg-[#A4522A] text-white rounded-xl text-sm font-medium transition-colors">
-            ดูห้อง
-          </Link>
-        </div>
       </div>
     </div>
   );
