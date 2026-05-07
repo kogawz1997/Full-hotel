@@ -42,11 +42,8 @@ export async function POST(request: Request) {
 
   // Check existing Supabase auth user
   const { data: { users } } = await admin.auth.admin.listUsers();
-  type AuthUser = {
-  email?: string | null;
-};
-
-const authUser = users.find((u: AuthUser) => u.email === email);
+  const normalizedEmail = email.toLowerCase();
+  const authUser = users.find((u) => u.email?.toLowerCase() === normalizedEmail);
 
   if (authUser) {
     // User exists — add to this org
@@ -95,7 +92,7 @@ const authUser = users.find((u: AuthUser) => u.email === email);
           </div>
           <h1 style="font-size: 24px; font-weight: 500; margin: 0 0 16px;">คุณได้รับเชิญ</h1>
           <p style="color: #666; line-height: 1.6; margin: 0 0 24px;">
-            ${ctx.profile.full_name || ctx.profile.email} ได้เชิญคุณเข้าร่วม <strong>${hotel?.name}</strong> 
+            ${(ctx.user as any)?.email || 'ทีมงาน'} ได้เชิญคุณเข้าร่วม <strong>${hotel?.name}</strong> 
             ในฐานะ <strong>${roleLabels[role]}</strong>
           </p>
           <a href="${process.env.NEXT_PUBLIC_APP_URL}/auth/login" 

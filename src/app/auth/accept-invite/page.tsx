@@ -9,12 +9,12 @@ import { toast } from 'sonner';
 export const dynamic = 'force-dynamic';
 export default function AcceptInvitePage() {
   const router = useRouter();
-  const supabase = createClient();
   const [status, setStatus] = useState<'loading' | 'setting_up' | 'error' | 'done'>('loading');
   const [hotelName, setHotelName] = useState('');
 
   useEffect(() => {
     async function setup() {
+      const supabase = createClient();
       // Supabase redirects here with session already set via magic link
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -57,7 +57,7 @@ export default function AcceptInvitePage() {
     }
 
     setup();
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 p-8">

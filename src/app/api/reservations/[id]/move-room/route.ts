@@ -29,7 +29,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     checkOut: reservation.check_out,
     excludeReservationId: reservation.id,
   });
-  if (!availability.ok) return NextResponse.json({ error: availability.error }, { status: availability.status || 409 });
+  if (!availability.ok) {
+    const err = 'error' in availability ? availability.error : 'Room not available';
+    const status = 'status' in availability ? availability.status : 409;
+    return NextResponse.json({ error: err }, { status: status || 409 });
+  }
 
   const oldRoomId = reservation.room_id;
   const { data, error } = await ctx.supabase.from('reservations')

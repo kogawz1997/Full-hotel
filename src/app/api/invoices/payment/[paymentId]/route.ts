@@ -34,7 +34,7 @@ function makePdf(lines: string[]) {
 export async function GET(_request: Request, context: any) {
   const params = await context.params;
   const paymentId = params.paymentId;
-  const ctx = await requireHotelAccess();
+  const ctx = await requireHotelAccess(null);
   if (ctx.error) return ctx.error;
 
   const { data: payment, error } = await ctx.supabase
