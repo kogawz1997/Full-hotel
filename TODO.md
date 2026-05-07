@@ -1,40 +1,4 @@
-# Maitri — Current TODO & Cleanup Status
-
-อัปเดตล่าสุด: 2026-05-07
-
-## ✅ Cleanup รอบนี้
-
-- [x] ลบ deployment config ที่ไม่ได้ใช้จริง: Docker, Render, Fly, Railway, Koyeb, Nixpacks, PM2
-- [x] ลบเอกสารสรุป Phase/Round เก่าที่ซ้ำกับ `README.md`, `ROADMAP.md`, `docs/*`
-- [x] ลบ Jest/Playwright config และ test placeholder ที่ไม่มี dependency ใน `package.json`
-- [x] ลบ `public/manifest.webmanifest` ที่ซ้ำกับ manifest หลัก
-- [x] ใช้ `public/manifest.webmanifest` เป็น PWA manifest ตัวเดียว
-- [x] ลบ cron ซ้ำ `/api/cron/trial-expiry`; เหลือ `/api/cron/trial-expire` ตาม tests/docs/vercel
-- [x] ลบ dev dependency ที่ไม่ได้ใช้: `@types/nodemailer`
-- [x] อัปเดต `vercel.json`, `package.json`, `package-lock.json`, `tsconfig.json`, `README.md` ให้ตรงสถานะปัจจุบัน
-
-## ✅ สถานะระบบหลัก
-
-- [x] Staff dashboard / dashboard modules
-- [x] Guest Portal
-- [x] Public hotel page `/h/[slug]`
-- [x] Booking/search flow
-- [x] Payment routes with production guard
-- [x] OTA/channel placeholders แยกจากของที่พร้อมใช้
-- [x] PWA + offline shell
-- [x] Sentry config
-- [x] Production/Vercel scripts
-
-## ⚠️ ต้องตรวจใน environment จริงก่อนรับเงินจริง
-
-- [ ] ตั้งค่า env production จริงใน Vercel: Supabase, SendGrid, Omise/Stripe, Sentry, Upstash, Cron secret
-- [ ] รัน `npm ci && npm run type-check && npm run build && npm run check` ในเครื่อง/CI ที่มี internet และ Node 20
-- [ ] ทดสอบ booking → payment → confirmation email กับ provider จริง
-- [ ] ทดสอบ Supabase RLS + tenant isolation ด้วย user หลาย tenant
-- [ ] เปิด OTA จริงเฉพาะช่องทางที่ได้ vendor credentials แล้ว
-- [ ] ตรวจ email verification/reset password URL ใน Supabase Dashboard
-
----
+# Maitri — Quick TODO
 
 ## 🔴 Sprint 1 — ทำก่อน launch
 
@@ -68,7 +32,7 @@
 - [x] **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`
 - [x] **Sentry** → install `@sentry/nextjs` + config files
 - [x] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
-- [x] **PWA manifest** → สร้าง `public/manifest.webmanifest` + icons
+- [x] **PWA manifest** → สร้าง `public/manifest.json` + icons
 - [x] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
 
 ## ⚡ Sprint 5 — Full features

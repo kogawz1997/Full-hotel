@@ -29,7 +29,7 @@
 - [ ] **Subscription billing** → สร้าง `src/app/dashboard/billing/page.tsx` + Stripe integration  <!-- TODO.md:L30 -->
 - [ ] **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`  <!-- TODO.md:L32 -->
 - [ ] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash  <!-- TODO.md:L34 -->
-- [ ] **PWA manifest** → สร้าง `public/manifest.webmanifest` + icons  <!-- TODO.md:L35 -->
+- [ ] **PWA manifest** → สร้าง `public/manifest.json` + icons  <!-- TODO.md:L35 -->
 - [ ] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`  <!-- TODO.md:L36 -->
 - [ ] **F&B POS** → สร้าง `src/app/dashboard/fb/menu/`, `fb/orders/`  <!-- TODO.md:L40 -->
 - [ ] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`  <!-- TODO.md:L41 -->
