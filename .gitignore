@@ -52,3 +52,6 @@ Thumbs.db
 
 # Sentry
 .sentryclirc
+
+# Local/export artifacts
+*.zip
