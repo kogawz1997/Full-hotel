@@ -25,7 +25,7 @@ export async function GET() {
   const otaRows = ota.data || [];
   const subscriptionRows = subscriptions.data || [];
 
-  const bySeverity = eventRows.reduce<Record<string, number>>((acc, row: any) => {
+  const bySeverity = eventRows.reduce((acc: Record<string, number>, row: any) => {
     const key = row.severity || 'info';
     acc[key] = (acc[key] || 0) + 1;
     return acc;

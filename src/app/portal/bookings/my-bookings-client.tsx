@@ -243,6 +243,9 @@ export function MyBookingsClient({ guest }: { guest: any }) {
                     <div className="flex flex-wrap gap-2">
                       {canCancel && (
                         <>
+                          <a href={`mailto:${hotel.email || ''}?subject=Pre-stay message (${b.reservation_code})`} className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium border border-black/10 rounded-lg hover:bg-black/5 transition-colors">
+                            <MessageSquare className="h-3.5 w-3.5" /> Direct message
+                          </a>
                           <button onClick={() => { setSelected(b); setShowRequests(true); setRequests({ text: b.special_requests || '', arrival: b.estimated_arrival || '' }); }}
                             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium border border-black/10 rounded-lg hover:bg-black/5 transition-colors">
                             <MessageSquare className="h-3.5 w-3.5" /> คำขอพิเศษ
