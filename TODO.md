@@ -1,5 +1,8 @@
 # Maitri — Quick TODO
 
+> Last updated: 2026-05-07
+> Maintainer/Credit: **KOGA.EXE**
+
 ## 🔴 Sprint 1 — ทำก่อน launch
 
 - [x] **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
@@ -7,7 +10,10 @@
 - [x] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
 - [x] **Terms of Service** → สร้าง `src/app/terms/page.tsx`
 - [x] **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
+
 - [x] **Email verification** → แก้ register flow แล้ว; สถานะใน Supabase Dashboard ต้องตรวจใน environment จริงอีกครั้ง
+- [x] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
+
 
 ## 🟠 Sprint 2 — Core features
 
@@ -41,7 +47,7 @@
 - [x] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
 - [x] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
 - [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
-- [x] **QR check-in** → สร้าง `src/app/portal/bookings/qr/page.tsx`
+  [x] **QR check-in** → สร้าง `src/app/portal/bookings/qr/page.tsx`
 - [x] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
 - [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
@@ -154,7 +160,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
+- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci>>>>>>> main
 - [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
@@ -325,10 +331,9 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] upsell system
 - [ ] add-on marketplace
 
-### 🟡 P2 — ทำให้ “ดูระดับตลาด”
-
+### 🟡 P2 — ทำให้ดูระดับตลาด
 #### 9) UX Polish
-- [ ] skeleton loading ทุกหน้า
+- [ ] skeleton loading ทุกหน้าสำคัญ
 - [ ] proper empty states
 - [ ] smooth transitions
 - [ ] better mobile gestures
@@ -379,7 +384,6 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] AI revenue forecasting
 - [ ] AI occupancy prediction
 - [ ] AI pricing assistant
-
 ### 🟣 P4 — จุดที่ “ตลาดใหญ่” มี
 
 #### 15) Ecosystem
