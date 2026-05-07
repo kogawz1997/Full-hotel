@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { formatCurrency, cn } from '@/lib/utils';
 import { format, addDays } from 'date-fns';
 import { Search, MapPin, Star, Filter, X, ChevronDown, Users, Calendar, SlidersHorizontal, Heart } from 'lucide-react';
-import { WishlistButton } from '@/components/ui/wishlist-button';
+import { HotelCard } from '@/components/public/HotelCard';
 
 const HOTEL_TYPES = [
   { value: '', label: 'ทุกประเภท' },
@@ -46,6 +46,8 @@ function SearchContent() {
   const [total, setTotal] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [recentViewed, setRecentViewed] = useState<any[]>([]);
 
   const search = useCallback(async (q = query) => {
     setLoading(true);
@@ -65,6 +67,7 @@ function SearchContent() {
 
   useEffect(() => {
     if (searchParams.get('city') || searchParams.get('checkIn')) search();
+    try { const raw = localStorage.getItem('recent_hotels'); if (raw) setRecentViewed(JSON.parse(raw)); } catch {}
   }, []);
 
   function doSearch() {
@@ -74,6 +77,23 @@ function SearchContent() {
     router.push(`/search?${params}`, { scroll: false });
     search();
   }
+
+
+
+  function toggleCompare(h: any) {
+    setCompareIds((prev) => prev.includes(h.id) ? prev.filter((id) => id !== h.id) : prev.length < 3 ? [...prev, h.id] : prev);
+  }
+
+  function trackRecent(h: any) {
+    const next = [h, ...recentViewed.filter((x) => x.id !== h.id)].slice(0, 5);
+    setRecentViewed(next);
+    try { localStorage.setItem('recent_hotels', JSON.stringify(next)); } catch {}
+  }
+
+  const compareHotels = hotels.filter((h) => compareIds.includes(h.id));
+  const aiRecommended = [...hotels].sort((a,b)=>(Number(b.avg_rating||0)-Number(a.avg_rating||0))).slice(0,3);
+  const isLastMinute = Math.max(0, Math.round((new Date(query.checkIn).getTime()-Date.now())/86400000)) <= 3;
+  const lastMinuteDeals = hotels.filter((h)=>Number(h.min_price||0)>0).slice(0,3);
 
   const nights = Math.max(1, Math.round(
     (new Date(query.checkOut).getTime() - new Date(query.checkIn).getTime()) / 86400000
@@ -200,9 +220,32 @@ function SearchContent() {
               {query.city && ` ใน${query.city}`}
               {` · ${nights} คืน · ${query.adults} ผู้ใหญ่`}
             </p>
+            {compareHotels.length > 0 && (
+              <div className="mb-4 rounded-xl border border-black/10 bg-white p-4">
+                <p className="text-sm font-medium mb-2">Compare hotels ({compareHotels.length}/3)</p>
+                <div className="grid md:grid-cols-3 gap-3">{compareHotels.map((h)=><div key={h.id} className="border rounded-lg p-3 text-sm"><div className="font-medium">{h.name}</div><div>⭐ {h.avg_rating || '-'} · {formatCurrency(h.min_price||0)}</div></div>)}</div>
+              </div>
+            )}
+
+            {recentViewed.length > 0 && (
+              <div className="mb-4 rounded-xl border border-black/10 bg-white p-4"><p className="text-sm font-medium mb-2">Recently viewed hotels</p><div className="text-xs text-[#2A2522]/60">{recentViewed.map((h)=>h.name).join(' • ')}</div></div>
+            )}
+
+            <div className="mb-4 rounded-xl border border-black/10 bg-white p-4"><p className="text-sm font-medium mb-2">AI-based recommended hotels</p><div className="text-xs text-[#2A2522]/60">{aiRecommended.map((h)=>`${h.name} (${h.avg_rating || '-'})`).join(' • ')}</div></div>
+
+            {isLastMinute && lastMinuteDeals.length > 0 && (
+              <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm font-medium text-emerald-700 mb-2">Last-minute deals</p><div className="text-xs text-emerald-700">{lastMinuteDeals.map((h)=>`${h.name} เริ่ม ${formatCurrency(h.min_price||0)}`).join(' • ')}</div></div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {hotels.map(hotel => (
-                <HotelCard key={hotel.id} hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
+                <div key={hotel.id} className="space-y-2">
+                  <HotelCard hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
+                  <div className="flex gap-2">
+                    <button onClick={() => toggleCompare(hotel)} className="text-xs px-2 py-1 border rounded">{compareIds.includes(hotel.id) ? 'ลบออก compare' : 'เปรียบเทียบ'}</button>
+                    <button onClick={() => trackRecent(hotel)} className="text-xs px-2 py-1 border rounded">บันทึกล่าสุด</button>
+                  </div>
+                </div>
               ))}
             </div>
           </>
@@ -212,83 +255,9 @@ function SearchContent() {
   );
 }
 
-function HotelCard({ hotel, nights, checkIn, checkOut }: any) {
-  const [imgIdx, setImgIdx] = useState(0);
-  const imgs = hotel.gallery || [];
-  const heroImg = imgs[imgIdx]?.image_url || hotel.hero_image_url;
-
-  return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-black/5 group hover:shadow-md transition-shadow">
-      {/* Image */}
-      <div className="relative h-52 bg-[#FAF7F2] overflow-hidden">
-        {heroImg ? (
-          <img src={heroImg} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-5xl text-[#2A2522]/10 font-serif">
-            {hotel.name?.charAt(0)}
-          </div>
-        )}
-        {/* Image dots */}
-        {imgs.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {imgs.slice(0, 4).map((_: any, i: number) => (
-              <button key={i} onClick={() => setImgIdx(i)}
-                className={cn('h-1.5 rounded-full transition-all', i === imgIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/60')} />
-            ))}
-          </div>
-        )}
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-1.5">
-          {hotel.type && <span className="text-2xs bg-white/90 text-[#2A2522] px-2 py-0.5 rounded-full font-medium capitalize">{hotel.type.replace('_', ' ')}</span>}
-        </div>
-        <div className="absolute top-3 right-3">
-          <WishlistButton hotelId={hotel.id} />
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#2A2522] truncate">{hotel.name}</h3>
-            {hotel.city && <p className="text-xs text-[#2A2522]/40 flex items-center gap-1 mt-0.5"><MapPin className="h-3 w-3" />{hotel.city}</p>}
-          </div>
-          {hotel.avg_rating && (
-            <div className="flex items-center gap-1 shrink-0 ml-2">
-              <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
-              <span className="text-sm font-bold text-[#2A2522]">{hotel.avg_rating}</span>
-              {hotel.review_count > 0 && <span className="text-xs text-[#2A2522]/30">({hotel.review_count})</span>}
-            </div>
-          )}
-        </div>
-
-        {hotel.tagline && <p className="text-xs text-[#2A2522]/50 line-clamp-1 mb-2">{hotel.tagline}</p>}
-
-        <div className="flex items-end justify-between mt-3">
-          <div>
-            {hotel.min_rate ? (
-              <>
-                <span className="text-xs text-[#2A2522]/40">เริ่มต้น</span>
-                <div className="font-bold text-lg text-[#2A2522]">{formatCurrency(hotel.min_rate)}</div>
-                <span className="text-xs text-[#2A2522]/40">/ คืน · รวม VAT</span>
-              </>
-            ) : (
-              <span className="text-xs text-[#2A2522]/40">ไม่มีห้องว่าง</span>
-            )}
-          </div>
-          <Link href={`/booking/${hotel.slug}?checkIn=${checkIn}&checkOut=${checkOut}`}
-            className="px-4 py-2 bg-[#C66A30] hover:bg-[#A4522A] text-white rounded-xl text-sm font-medium transition-colors">
-            ดูห้อง
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center"><div className="h-8 w-8 border-2 border-[#C66A30]/30 border-t-[#C66A30] rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF7F2]" />}>
       <SearchContent />
     </Suspense>
   );

@@ -157,3 +157,83 @@ export async function createTurndownTasks(hotelId: string) {
   await Promise.allSettled(tasks);
   return tasks.length;
 }
+
+export async function generateTodayTasks(hotelId: string) {
+  const admin = createAdminClient();
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const created: string[] = [];
+
+  // Create turndown tasks for checked-in rooms
+  const turndownCount = await createTurndownTasks(hotelId);
+
+  // Create daily inspection tasks for available/clean rooms once per day
+  const { data: rooms } = await admin
+    .from('rooms')
+    .select('id')
+    .eq('hotel_id', hotelId)
+    .in('status', ['available', 'clean']);
+
+  const roomIds = (rooms || []).map((r: any) => r.id);
+  for (const roomId of roomIds) {
+    const { data: existing } = await admin
+      .from('housekeeping_tasks')
+      .select('id')
+      .eq('hotel_id', hotelId)
+      .eq('room_id', roomId)
+      .eq('task_type', 'inspection')
+      .gte('scheduled_for', `${today}T00:00:00`)
+      .lte('scheduled_for', `${today}T23:59:59`)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) continue;
+
+    const task = await createHousekeepingTask({
+      hotelId,
+      roomId,
+      type: 'inspection',
+      priority: 'normal',
+      scheduledFor: `${today}T15:00:00`,
+    });
+    created.push(task.id);
+  }
+
+  return { created: created.length + turndownCount };
+}
+
+export async function autoAssignTasks(hotelId: string) {
+  const admin = createAdminClient();
+
+  const { data: pendingTasks } = await admin
+    .from('housekeeping_tasks')
+    .select('id')
+    .eq('hotel_id', hotelId)
+    .eq('status', 'pending')
+    .is('assigned_to', null)
+    .order('scheduled_for', { ascending: true })
+    .limit(100);
+
+  const { data: staff } = await admin
+    .from('staff')
+    .select('id')
+    .eq('hotel_id', hotelId)
+    .in('role', ['housekeeper', 'manager']);
+
+  const staffIds = (staff || []).map((s: any) => s.id);
+  if (!staffIds.length || !(pendingTasks || []).length) return { assigned: 0 };
+
+  let assigned = 0;
+  for (let i = 0; i < (pendingTasks || []).length; i++) {
+    const assigneeId = staffIds[i % staffIds.length];
+    const taskId = pendingTasks![i].id;
+    const { error } = await admin
+      .from('housekeeping_tasks')
+      .update({ assigned_to: assigneeId })
+      .eq('id', taskId)
+      .eq('hotel_id', hotelId)
+      .is('assigned_to', null);
+    if (!error) assigned += 1;
+  }
+
+  return { assigned };
+}

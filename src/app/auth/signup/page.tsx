@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input';
 
 export default function SignupPage() {
   const router = useRouter();
-  const supabase = createClient();
   const [hotelName, setHotelName] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,6 +21,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
 
+    const supabase = createClient();
     const { data, error: authError } = await supabase.auth.signUp({
       email, password,
       options: { data: { full_name: fullName, hotel_name: hotelName } },
