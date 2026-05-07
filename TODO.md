@@ -148,17 +148,17 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ## 🔴 P0 — ต้องปิดก่อน Deploy (จาก Reality Check)
 
 ### 1. npm ci / package-lock.json
-- [ ] **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`
+- [x] **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`
   ```bash
   rm package-lock.json
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-- [ ] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
+- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
 - [ ] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
-- [ ] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
+- [x] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
   ```typescript
   // src/app/api/reservations/route.ts
   paymentMethod: z.enum(['online','at_hotel','deposit']).default('online'),
@@ -167,7 +167,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] รัน `npm run type-check` ให้ผ่าน 0 errors ก่อน deploy
 
 ### 3. Payment "fail closed" ใน Production
-- [ ] **แก้ refund, deposit, reconcile routes** — ถ้าไม่มี `OMISE_SECRET_KEY` ใน production ต้อง **return error** ไม่ใช่ return mock success
+- [x] **แก้ refund, deposit, reconcile routes** — ถ้าไม่มี `OMISE_SECRET_KEY` ใน production ต้อง **return error** ไม่ใช่ return mock success
   ```typescript
   // ผิด (ตอนนี้):
   if (process.env.OMISE_SECRET_KEY && !includes('demo')) { /* real */ }
@@ -180,9 +180,9 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
     }
   }
   ```
-- [ ] เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`
-- [ ] เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`
-- [ ] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
 
 ### 4. OTA sync — ระบุชัดว่า placeholder
 - [ ] **ซ่อน OTA channels ที่ยังไม่พร้อม** ออกจาก UI ลูกค้า

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -9,7 +9,6 @@ import { Lock, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 function ResetPasswordForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
@@ -19,6 +18,7 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     // Supabase puts tokens in URL hash — listen for session from magic link
+    const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') setSessionReady(true);
     });
@@ -37,6 +37,7 @@ function ResetPasswordForm() {
     e.preventDefault();
     if (!allPass) return;
     setLoading(true);
+    const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
