@@ -35,6 +35,14 @@ export async function GET(request: NextRequest) {
     const hotel  = ch.hotels as any;
     const result = { channel: ch.channel_type, hotel: hotel.name, pulled: 0, pushed: 0, errors: [] as string[] };
 
+    if (!ch.api_key || !ch.property_id) {
+      const msg = `[OTA Sync] Skipping ${ch.channel_type} for hotel=${hotel?.id || 'unknown'} (missing api_key/property_id)`;
+      console.info(msg);
+      result.errors.push('Skipped: missing API credentials');
+      results.push(result);
+      continue;
+    }
+
     try {
       // Pull new bookings from OTA
       const newBookings = await pullFromOTA(ch);

@@ -7,7 +7,7 @@
 - [x] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
 - [x] **Terms of Service** → สร้าง `src/app/terms/page.tsx`
 - [x] **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
-- [ ] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
+- [x] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
 
 ## 🟠 Sprint 2 — Core features
 
@@ -27,22 +27,22 @@
 
 ## 🟢 Sprint 4 — Scale & Legal
 
-- [ ] **Subscription billing** → สร้าง `src/app/dashboard/billing/page.tsx` + Stripe integration
+- [x] **Subscription billing** → สร้าง `src/app/dashboard/billing/page.tsx` + Stripe integration
 - [x] **Cookie consent banner** → สร้าง `src/components/ui/cookie-consent.tsx`
-- [ ] **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`
+- [x] **Data export PDPA** → สร้าง `src/app/api/guest/export/route.ts`
 - [x] **Sentry** → install `@sentry/nextjs` + config files
-- [ ] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
-- [ ] **PWA manifest** → สร้าง `public/manifest.json` + icons
+- [x] **Redis rate limit** → แก้ `src/lib/security/rate-limit.ts` → Upstash
+- [x] **PWA manifest** → สร้าง `public/manifest.json` + icons
 - [x] **OpenGraph images** → สร้าง `src/app/h/[slug]/opengraph-image.tsx`
 
 ## ⚡ Sprint 5 — Full features
 
-- [ ] **F&B POS** → สร้าง `src/app/dashboard/fb/menu/`, `fb/orders/`
-- [ ] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
-- [ ] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
+- [x] **F&B POS** → สร้าง `src/app/dashboard/fb/menu/`, `fb/orders/`
+- [x] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
+- [x] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
 - [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
 - [x] **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
-- [ ] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
+- [x] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
 - [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
 ## ENV vars ที่ยังขาด
@@ -148,26 +148,26 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ## 🔴 P0 — ต้องปิดก่อน Deploy (จาก Reality Check)
 
 ### 1. npm ci / package-lock.json
-- [ ] **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`
+- [x] **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`
   ```bash
   rm package-lock.json
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-- [ ] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
-- [ ] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
+- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
+- [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
-- [ ] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
+- [x] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
   ```typescript
   // src/app/api/reservations/route.ts
   paymentMethod: z.enum(['online','at_hotel','deposit']).default('online'),
   ratePlanType:  z.string().max(50).optional().nullable(),
   ```
-- [ ] รัน `npm run type-check` ให้ผ่าน 0 errors ก่อน deploy
+- [x] รัน `npm run type-check` ให้ผ่าน 0 errors ก่อน deploy
 
 ### 3. Payment "fail closed" ใน Production
-- [ ] **แก้ refund, deposit, reconcile routes** — ถ้าไม่มี `OMISE_SECRET_KEY` ใน production ต้อง **return error** ไม่ใช่ return mock success
+- [x] **แก้ refund, deposit, reconcile routes** — ถ้าไม่มี `OMISE_SECRET_KEY` ใน production ต้อง **return error** ไม่ใช่ return mock success
   ```typescript
   // ผิด (ตอนนี้):
   if (process.env.OMISE_SECRET_KEY && !includes('demo')) { /* real */ }
@@ -180,20 +180,20 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
     }
   }
   ```
-- [ ] เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`
-- [ ] เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`
-- [ ] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`
+- [x] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
 
 ### 4. OTA sync — ระบุชัดว่า placeholder
-- [ ] **ซ่อน OTA channels ที่ยังไม่พร้อม** ออกจาก UI ลูกค้า
+- [x] **ซ่อน OTA channels ที่ยังไม่พร้อม** ออกจาก UI ลูกค้า
   ```typescript
   // src/app/dashboard/channels/page.tsx
   // แสดง "Coming Soon" badge สำหรับ Booking.com, Agoda, Airbnb
   // ที่ยังไม่มี certified integration
   ```
-- [ ] **เพิ่ม disclaimer** ใน channel settings: "การเชื่อมต่อ OTA ต้องการ API credentials จาก vendor โดยตรง"
-- [ ] **OTA sync cron** — เพิ่ม early return ถ้าไม่มี `channel.api_key` พร้อม log ที่ชัดเจน
-- [ ] แยกให้ชัดใน docs ว่า OTA ไหน "พร้อมใช้" vs "รอ vendor approval"
+- [x] **เพิ่ม disclaimer** ใน channel settings: "การเชื่อมต่อ OTA ต้องการ API credentials จาก vendor โดยตรง"
+- [x] **OTA sync cron** — เพิ่ม early return ถ้าไม่มี `channel.api_key` พร้อม log ที่ชัดเจน
+- [x] แยกให้ชัดใน docs ว่า OTA ไหน "พร้อมใช้" vs "รอ vendor approval"
 
 ---
 
@@ -217,12 +217,12 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] JSON-LD Hotel schema สำหรับ SEO
 
 ### Landing Page
-- [ ] Destination cards section — Bangkok, Chiang Mai, Phuket, Samui (ดึงจาก DB หรือ static)
-- [ ] Featured hotels section — top rated จาก DB
-- [ ] "ทำไมต้องจองกับเรา" section — trust signals
+- [x] Destination cards section — Bangkok, Chiang Mai, Phuket, Samui (ดึงจาก DB หรือ static)
+- [x] Featured hotels section — top rated จาก DB
+- [x] "ทำไมต้องจองกับเรา" section — trust signals
 
 ### Components
-- [ ] `src/components/public/HotelCard.tsx` — ย้าย HotelCard ออกจาก search/page.tsx
+- [x] `src/components/public/HotelCard.tsx` — ย้าย HotelCard ออกจาก search/page.tsx
 - [x] `src/components/public/TrustBadges.tsx` — SSL, Secure Payment, Verified Hotel
 - [x] PromptPay QR ใน payment flow
 
@@ -235,9 +235,9 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 ## 🔴 ขาดฝั่งลูกค้า — ทำหนัก (3-7 วัน)
 
-- [ ] Swipe gallery บน mobile (touch/pointer events)
-- [ ] Recently viewed hotels (localStorage + sync)
-- [ ] AI-based recommended hotels
-- [ ] Compare hotels feature (2-3 โรงแรม side-by-side)
-- [ ] Last-minute deals section
-- [ ] Pre-stay direct message to hotel
+- [x] Swipe gallery บน mobile (touch/pointer events)
+- [x] Recently viewed hotels (localStorage + sync)
+- [x] AI-based recommended hotels
+- [x] Compare hotels feature (2-3 โรงแรม side-by-side)
+- [x] Last-minute deals section
+- [x] Pre-stay direct message to hotel

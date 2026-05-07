@@ -98,6 +98,31 @@ export function BookingEngine({ hotel, roomTypes: initialRoomTypes }: { hotel: a
     setStep('rooms');
   }
 
+
+
+  async function applyPromo() {
+    const code = promoCode.trim().toUpperCase();
+    if (!code) return;
+    setPromoLoading(true);
+    try {
+      const demoPromos: Record<string, { description: string; percent: number }> = {
+        SAVE10: { description: 'ส่วนลด 10% สำหรับการจองตรง', percent: 10 },
+        MAITRI5: { description: 'ส่วนลด 5% โปรโมชั่นพิเศษ', percent: 5 },
+      };
+      const promo = demoPromos[code];
+      if (!promo) {
+        setPromoResult({ valid: false });
+        toast.error('โค้ดส่วนลดไม่ถูกต้อง');
+        return;
+      }
+      const discountAmount = Math.round((subtotal * promo.percent) / 100);
+      setPromoResult({ valid: true, description: promo.description, discountAmount, code });
+      toast.success('ใช้โค้ดส่วนลดสำเร็จ');
+    } finally {
+      setPromoLoading(false);
+    }
+  }
+
   async function handleBook() {
     if (!guestInfo.firstName || !guestInfo.email) { toast.error('กรุณากรอกข้อมูลให้ครบ'); return; }
     setSubmitting(true);
