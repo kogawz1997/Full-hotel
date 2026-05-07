@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
-  const supabase = createClient();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -16,6 +15,7 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
+    const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email.toLowerCase().trim(), {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
