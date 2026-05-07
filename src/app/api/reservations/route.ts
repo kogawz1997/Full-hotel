@@ -7,6 +7,8 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { sendBookingConfirmation, sendNewBookingAlert } from '@/lib/email-templates';
 import { assertRoomAvailable } from '@/lib/pms/availability';
+import { checkAndReserve } from '@/lib/booking/availability-lock';
+import { getPolicyForRatePlan } from '@/lib/booking/cancellation-policy';
 
 const createReservationSchema = z.object({
   hotelId: z.string().uuid().optional(),
@@ -61,7 +63,7 @@ export async function POST(request: Request) {
       hotelId = hotel.id;
     } else {
       // Staff booking — require hotel access
-      const ctx = await requireHotelAccess(body.hotelId, [
+      const ctx = await requireHotelAccess(body.hotelId ?? null, [
         'owner', 'admin', 'manager', 'front_desk',
       ]);
       if (ctx.error) return ctx.error;
@@ -105,7 +107,9 @@ export async function POST(request: Request) {
     });
 
     if (!availability.ok) {
-      return NextResponse.json({ error: availability.error }, { status: availability.status || 409 });
+      const err = 'error' in availability ? availability.error : 'Room not available';
+      const status = 'status' in availability ? availability.status : 409;
+      return NextResponse.json({ error: err }, { status: status || 409 });
     }
 
     let guest: any = null;

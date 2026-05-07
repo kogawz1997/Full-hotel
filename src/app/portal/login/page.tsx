@@ -1,18 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function GuestLoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = searchParams.get('next') || '/portal/bookings';
-
-  const verified = searchParams.get('verified') === '1';
+  const [next, setNext] = useState('/portal/bookings');
+  const [verified, setVerified] = useState(false);
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setNext(params.get('next') || '/portal/bookings');
+    setVerified(params.get('verified') === '1');
+  }, []);
+
   const [form, setForm] = useState({
     email: '', password: '', firstName: '', lastName: '',
     phone: '', confirmPassword: '', marketingConsent: false,

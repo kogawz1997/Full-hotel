@@ -51,6 +51,26 @@ const PLANS = [
   },
 ];
 
+
+const DESTINATIONS = [
+  { name: 'Bangkok', emoji: '🌆' },
+  { name: 'Chiang Mai', emoji: '🏞️' },
+  { name: 'Phuket', emoji: '🏝️' },
+  { name: 'Samui', emoji: '🌴' },
+];
+
+const TRUST_SIGNALS = [
+  'Best price guarantee',
+  'Free cancellation on selected rates',
+  'Secure payment & PDPA-ready',
+];
+
+const FEATURED_HOTELS = [
+  { name: "Maitri Riverside Bangkok", rating: 4.8 },
+  { name: "Maitri Nimman Chiang Mai", rating: 4.7 },
+  { name: "Maitri Beachfront Phuket", rating: 4.9 },
+];
+
 const TESTIMONIALS = [
   {
     quote: 'ก่อนใช้ Maitri ต้องตอบ LINE ด้วยตัวเองทุกคืน ตอนนี้ AI ตอบแทนได้เลย รายได้เพิ่มขึ้น 23% ในสามเดือนแรก',
@@ -209,6 +229,34 @@ export default function HomePage() {
                 <div className="text-sm text-white/40 uppercase tracking-wider">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-14 bg-white/50">
+        <div className="container max-w-7xl px-4">
+          <h3 className="font-serif text-3xl mb-6">จุดหมายปลายทางยอดนิยม</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            {DESTINATIONS.map((d) => (
+              <div key={d.name} className="rounded-2xl border border-black/10 bg-white p-5 text-center">
+                <div className="text-3xl mb-2">{d.emoji}</div>
+                <div className="font-medium">{d.name}</div>
+              </div>
+            ))}
+          </div>
+          <h3 className="font-serif text-3xl mb-4">Featured hotels</h3>
+          <div className="grid md:grid-cols-3 gap-4 mb-8">
+            {FEATURED_HOTELS.map((h) => (
+              <div key={h.name} className="rounded-xl border border-black/10 bg-white p-4">
+                <div className="font-medium">{h.name}</div>
+                <div className="text-sm text-[#2A2522]/60">⭐ {h.rating}</div>
+              </div>
+            ))}
+          </div>
+
+          <h3 className="font-serif text-3xl mb-4">ทำไมต้องจองกับเรา</h3>
+          <div className="grid md:grid-cols-3 gap-3">
+            {TRUST_SIGNALS.map((t) => <div key={t} className="rounded-xl bg-[#2A2522] text-white/90 px-4 py-3 text-sm">✓ {t}</div>)}
           </div>
         </div>
       </section>
