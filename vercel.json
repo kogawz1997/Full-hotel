@@ -30,7 +30,7 @@
     },
     {
       "path": "/api/cron/expire-pending",
-      "schedule": "0 */12 * * *"
+      "schedule": "0 4 * * *"
     }
   ],
   "installCommand": "npm ci --no-audit --no-fund",
