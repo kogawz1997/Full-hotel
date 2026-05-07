@@ -17,10 +17,10 @@ import {
 const OTA_CHANNELS = [
   { id: 'booking_com', name: 'Booking.com', emoji: '🏨', setupWeeks: '4–12 wks', commission: '15–18%', via: 'Direct API', docsUrl: 'https://partner.booking.com', color: 'from-blue-600 to-sky-500', needsKey: 'BOOKING_COM_WEBHOOK_TOKEN' },
   { id: 'agoda', name: 'Agoda', emoji: '🏯', setupWeeks: '6–16 wks', commission: '15–18%', via: 'YCS API', docsUrl: 'https://ycs.agoda.com', color: 'from-red-600 to-rose-500', needsKey: 'AGODA_WEBHOOK_TOKEN' },
-  { id: 'airbnb', name: 'Airbnb', emoji: '🏡', setupWeeks: '2–4 wks', commission: '3%+', via: 'Software Partner', docsUrl: 'https://airbnb.com/partner', color: 'from-rose-500 to-pink-500', needsKey: '' },
-  { id: 'expedia', name: 'Expedia', emoji: '✈️', setupWeeks: '4–8 wks', commission: '15–25%', via: 'Direct', docsUrl: 'https://expediagroup.com', color: 'from-amber-500 to-yellow-500', needsKey: '' },
-  { id: 'trip_com', name: 'Trip.com', emoji: '🌏', setupWeeks: '4–8 wks', commission: '13–15%', via: 'Direct', docsUrl: 'https://trip.com', color: 'from-cyan-600 to-blue-500', needsKey: '' },
-  { id: 'hostelworld', name: 'Hostelworld', emoji: '🎒', setupWeeks: '2–4 wks', commission: '12–15%', via: 'Direct', docsUrl: 'https://hostelworld.com', color: 'from-green-600 to-emerald-500', needsKey: '' },
+  { id: 'airbnb', comingSoon: true, name: 'Airbnb', emoji: '🏡', setupWeeks: '2–4 wks', commission: '3%+', via: 'Software Partner', docsUrl: 'https://airbnb.com/partner', color: 'from-rose-500 to-pink-500', needsKey: '' },
+  { id: 'expedia', comingSoon: true, name: 'Expedia', emoji: '✈️', setupWeeks: '4–8 wks', commission: '15–25%', via: 'Direct', docsUrl: 'https://expediagroup.com', color: 'from-amber-500 to-yellow-500', needsKey: '' },
+  { id: 'trip_com', comingSoon: true, name: 'Trip.com', emoji: '🌏', setupWeeks: '4–8 wks', commission: '13–15%', via: 'Direct', docsUrl: 'https://trip.com', color: 'from-cyan-600 to-blue-500', needsKey: '' },
+  { id: 'hostelworld', comingSoon: true, name: 'Hostelworld', emoji: '🎒', setupWeeks: '2–4 wks', commission: '12–15%', via: 'Direct', docsUrl: 'https://hostelworld.com', color: 'from-green-600 to-emerald-500', needsKey: '' },
 ];
 
 const AGGREGATORS = [
@@ -104,6 +104,11 @@ export function ChannelsClient({ hotelId, hotelName, connections, roomTypes }: {
         </div>
       </div>
 
+      <div className="flex gap-3 p-4 rounded-xl border border-amber-200 bg-amber-50/60 mb-6">
+        <AlertCircle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+        <div className="text-sm text-amber-900">การเชื่อมต่อ OTA ต้องการ API credentials จาก vendor โดยตรง และบางช่องทางยังอยู่ระหว่าง vendor approval</div>
+      </div>
+
       {/* OTA grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {OTA_CHANNELS.map(ch => {
@@ -130,10 +135,13 @@ export function ChannelsClient({ hotelId, hotelName, connections, roomTypes }: {
                       <span className="flex items-center gap-1 text-2xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> เชื่อมแล้ว
                       </span>
-                    ) : (
+) : (
                       <span className="text-2xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full flex items-center gap-1">
                         <Clock className="h-3 w-3" /> ยังไม่เชื่อม
                       </span>
+                    )}
+                    {ch.comingSoon && (
+                      <Badge variant="secondary" className="ml-1">Coming Soon</Badge>
                     )}
                   </div>
                 </div>
@@ -163,9 +171,9 @@ export function ChannelsClient({ hotelId, hotelName, connections, roomTypes }: {
                     </>
                   ) : (
                     <>
-                      <Button size="sm" className="flex-1"
+                      <Button size="sm" className="flex-1" disabled={ch.comingSoon}
                         onClick={() => { setConfigChannel(ch); setConfigForm({ apiKey: '', webhookToken: '', active: true }); }}>
-                        <Plug className="h-3.5 w-3.5" /> เชื่อมต่อ
+                        <Plug className="h-3.5 w-3.5" /> {ch.comingSoon ? 'Coming Soon' : 'เชื่อมต่อ'}
                       </Button>
                       <a href={ch.docsUrl} target="_blank" rel="noopener noreferrer">
                         <Button size="sm" variant="ghost"><ExternalLink className="h-3.5 w-3.5" /></Button>
