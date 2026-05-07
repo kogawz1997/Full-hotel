@@ -2,7 +2,7 @@
   "name": "maitri-pms",
   "version": "0.3.0",
   "private": true,
-  "packageManager": "npm@10.8.2",
+  "packageManager": "npm@10.9.2",
   "engines": {
     "node": "20.x"
   },
