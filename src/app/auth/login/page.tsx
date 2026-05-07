@@ -30,19 +30,17 @@ export default function LoginPage() {
         toast.error(result.error.message);
         return;
       }
-
       const [{ data: staffProfile }, { data: guestAccount }] = await Promise.all([
         supabase.from('user_profiles').select('id').eq('id', result.data.user.id).maybeSingle(),
         supabase.from('guest_accounts').select('id').eq('id', result.data.user.id).maybeSingle(),
       ]);
-
       toast.success('ยินดีต้อนรับกลับ');
-
       const redirectPath = staffProfile ? '/dashboard' : guestAccount ? '/portal/bookings' : '/onboarding';
 
       // Use hard navigation to ensure auth cookies are sent on first protected-page request (mobile Safari).
       window.location.href = redirectPath;
       return;
+
     } catch (error) {
       if (error instanceof Error && error.message === 'AUTH_TIMEOUT') {
         toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
