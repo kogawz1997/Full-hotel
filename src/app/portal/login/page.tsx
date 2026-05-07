@@ -25,48 +25,67 @@ export default function GuestLoginPage() {
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
 
+  async function requestWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(input, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    if (mode === 'forgot') {
-      await fetch('/api/guest/auth/forgot-password', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email }),
-      });
-      toast.success('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
-      setMode('login');
-      setLoading(false);
-      return;
-    }
-
-    if (mode === 'register') {
-      if (form.password !== form.confirmPassword) {
-        toast.error('รหัสผ่านไม่ตรงกัน'); setLoading(false); return;
+    try {
+      if (mode === 'forgot') {
+        await requestWithTimeout('/api/guest/auth/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email }),
+        });
+        toast.success('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
+        setMode('login');
+        return;
       }
-      const res = await fetch('/api/guest/auth/register', {
+
+      if (mode === 'register') {
+        if (form.password !== form.confirmPassword) {
+          toast.error('รหัสผ่านไม่ตรงกัน');
+          return;
+        }
+        const res = await requestWithTimeout('/api/guest/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email, password: form.password,
+            firstName: form.firstName, lastName: form.lastName,
+            phone: form.phone, marketingConsent: form.marketingConsent }),
+        });
+        const data = await res.json();
+        if (!res.ok) { toast.error(data.error); return; }
+        toast.success('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยัน');
+        setMode('login');
+        return;
+      }
+
+      const res = await requestWithTimeout('/api/guest/auth/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password,
-          firstName: form.firstName, lastName: form.lastName,
-          phone: form.phone, marketingConsent: form.marketingConsent }),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error); setLoading(false); return; }
-      toast.success('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยัน');
-      setMode('login');
+      if (!res.ok) { toast.error(data.error); return; }
+      router.push(next);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      } else {
+        toast.error('ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่อีกครั้ง');
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Login
-    const res = await fetch('/api/guest/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.email, password: form.password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { toast.error(data.error); setLoading(false); return; }
-    router.push(next);
-    router.refresh();
   }
 
   return (
