@@ -19,15 +19,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
+    try {
+      const supabase = createClient();
+      const result = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<{ error: { message: string } }>((resolve) =>
+          setTimeout(() => resolve({ error: { message: 'การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง' } }), 15000),
+        ),
+      ]);
+
+      if (result.error) {
+        toast.error(result.error.message);
+        return;
+      }
+
       toast.success('ยินดีต้อนรับกลับ');
       router.push('/dashboard');
       router.refresh();
+    } finally {
+      setLoading(false);
     }
   }
 
