@@ -156,7 +156,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   ```
 - [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
 
-- [ ] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
+- [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error (verified on 2026-05-07)
 
 ### 2. TypeScript errors ใน reservations route
 - [x] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
