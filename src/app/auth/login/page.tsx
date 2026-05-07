@@ -23,8 +23,9 @@ export default function LoginPage() {
       const supabase = createClient();
       const result = await Promise.race([
         supabase.auth.signInWithPassword({ email, password }),
-        new Promise<{ error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ error: { message: 'การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง' } }), 15000),
+codex/fix-login-hanging-issue-5f3cqo
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 15000),
         ),
       ]);
 
@@ -36,6 +37,13 @@ export default function LoginPage() {
       toast.success('ยินดีต้อนรับกลับ');
       router.push('/dashboard');
       router.refresh();
+    } catch (error) {
+      if (error instanceof Error && error.message === 'AUTH_TIMEOUT') {
+        toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      } else {
+        toast.error('ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง');
+      }
+
     } finally {
       setLoading(false);
     }
