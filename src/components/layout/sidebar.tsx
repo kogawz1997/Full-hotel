@@ -1,35 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
-  Wrench,
-  BarChart2,
-  Tag, usePathname } from 'next/navigation';
-import {
-  Wrench,
-  BarChart2,
-  Tag, useEffect, useState } from 'react';
-import {
-  Wrench,
-  BarChart2,
   Tag,
   LayoutDashboard, Calendar, CalendarRange, MessageSquare, Users, Bed,
   Sparkles, BarChart3, Receipt, Globe2, UtensilsCrossed,
   Heart, Award, Megaphone, Settings, LogOut, ChevronDown,
-  Building2, Shield, Settings2, Palette, CreditCard, Rocket,
+  Building2, Shield, Settings2, Palette, CreditCard, Rocket, Zap,
 } from 'lucide-react';
-import {
-  Wrench,
-  BarChart2,
-  Tag, cn } from '@/lib/utils';
-import {
-  Wrench,
-  BarChart2,
-  Tag, createClient } from '@/lib/supabase/client';
-import {
-  Wrench,
-  BarChart2,
-  Tag, CommandSearch, type CommandSearchItem } from '@/components/layout/command-search';
+import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { CommandSearch, type CommandSearchItem } from '@/components/layout/command-search';
 
 interface SidebarProps {
   hotelName: string;

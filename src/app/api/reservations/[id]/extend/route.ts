@@ -40,7 +40,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     checkOut: parsed.data.newCheckOut,
     excludeReservationId: reservation.id,
   });
-  if (!availability.ok) return NextResponse.json({ error: availability.error }, { status: availability.status || 409 });
+  if (!availability.ok) {
+    const err = 'error' in availability ? availability.error : 'Room not available';
+    const status = 'status' in availability ? availability.status : 409;
+    return NextResponse.json({ error: err }, { status: status || 409 });
+  }
 
   const newTotal = Number(reservation.total_amount || 0) + parsed.data.additionalAmount;
   const { data, error } = await ctx.supabase.from('reservations')
