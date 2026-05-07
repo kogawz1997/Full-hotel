@@ -45,4 +45,8 @@
       "schedule": "0 6 * * *"
     }
   ],
+  {
+  "installCommand": "npm install --legacy-peer-deps --no-audit --no-fund",
+  "buildCommand": "npm run build"
+}
 } 
