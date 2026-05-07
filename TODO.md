@@ -1,5 +1,8 @@
 # Maitri — Quick TODO
 
+> Last updated: 2026-05-07
+> Maintainer/Credit: **KOGA.EXE**
+
 ## 🔴 Sprint 1 — ทำก่อน launch
 
 - [x] **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
@@ -7,7 +10,9 @@
 - [x] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
 - [x] **Terms of Service** → สร้าง `src/app/terms/page.tsx`
 - [x] **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
+
 - [x] **Email verification** → แก้ register flow แล้ว; สถานะใน Supabase Dashboard ต้องตรวจใน environment จริงอีกครั้ง
+- [x] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
 
 ## 🟠 Sprint 2 — Core features
 
@@ -41,7 +46,7 @@
 - [x] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
 - [x] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
 - [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
-- [x] **QR check-in** → สร้าง `src/app/portal/bookings/qr/page.tsx`
+  [x] **QR check-in** → สร้าง `src/app/portal/bookings/qr/page.tsx`
 - [x] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
 - [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
@@ -154,7 +159,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
+- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci
 - [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
@@ -185,7 +190,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
 
 ### 4. OTA sync — ระบุชัดว่า placeholder
-- [x] **แสดง OTA channels ที่ยังไม่พร้อมเป็น Coming Soon** (ยังไม่ให้เชื่อมต่อจริง)
+
+- [x] **แสดง OTA channels ที่ยังไม่พร้อมเป็น Coming Soon** (ยังไม่ให้เชื่อมต่อจริง
   ```typescript
   // src/app/dashboard/channels/page.tsx
   // แสดง "Coming Soon" badge สำหรับ Booking.com, Agoda, Airbnb
@@ -248,6 +254,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 > สถานะด้านล่างเป็น baseline สำหรับเปิดรับลูกค้าเชิงพาณิชย์จริง และยังต้อง verify กับ production env + monitoring จริง
 
+## 🆕 P0-P4 Launch Hardening Backlog (เพิ่มตามรีวิวล่าสุด)n
+
 ### 🔴 P0 — ต้องปิดก่อนเปิดรับลูกค้า
 
 #### 1) Build / TypeScript / CI
@@ -283,6 +291,38 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] secure upload validation
 - [ ] CSP/security headers
 - [ ] secret rotation guide
+- [ ] `npm run build` ต้องผ่าน 100% บน CI
+- [ ] `npm run type-check` = 0 errors บน CI
+- [ ] `npm ci` clean install ผ่านบน CI ทุกครั้ง
+- [ ] lock Node version ให้ตรงกันทุกที่ (local/CI/runtime)
+- [ ] ตั้ง branch protection ให้ CI fail แล้ว merge ไม่ได้
+
+#### 2) Payment Hardening
+- [ ] webhook verification จริงทุก provider
+- [ ] payment retry strategy (safe retry)
+- [ ] duplicate payment protection (idempotency)
+- [ ] refund flow test ครบ
+- [ ] partial refund flow + test
+- [ ] chargeback status handling
+- [ ] payment timeout handling
+- [ ] reconcile jobs schedule + alert
+
+#### 3) Reservation Safety
+- [ ] overbooking prevention test จริง (concurrent)
+- [ ] race-condition test สำหรับจองห้องเดียวกันพร้อมกัน
+- [ ] room inventory lock coverage test
+- [ ] pending payment expiration ทำงานจริงทุก env
+- [ ] auto-release room inventory test
+
+#### 4) Security
+- [ ] audit logs ครบทุก action สำคัญ
+- [ ] rate limit ครอบคลุม auth/payment endpoints ทั้งหมด
+- [ ] brute-force protection policy
+- [ ] session/device tracking
+- [ ] IP anomaly detection
+- [ ] secure upload validation ครบทุก upload route
+- [ ] CSP/security headers review
+- [ ] secret rotation guide (ops runbook)
 
 ### 🟠 P1 — ระบบตลาดจริงต้องมี
 
@@ -329,6 +369,9 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 #### 9) UX Polish
 - [ ] skeleton loading ทุกหน้า
+### 🟡 P2 — ทำให้ดูระดับตลาด
+- [ ] skeleton loading ทุกหน้าสำคัญ
+
 - [ ] proper empty states
 - [ ] smooth transitions
 - [ ] better mobile gestures
@@ -379,7 +422,6 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] AI revenue forecasting
 - [ ] AI occupancy prediction
 - [ ] AI pricing assistant
-
 ### 🟣 P4 — จุดที่ “ตลาดใหญ่” มี
 
 #### 15) Ecosystem
