@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { ArrowRight } from 'lucide-react';
@@ -10,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,16 +35,12 @@ export default function LoginPage() {
         supabase.from('guest_accounts').select('id').eq('id', result.data.user.id).maybeSingle(),
       ]);
       toast.success('ยินดีต้อนรับกลับ');
+      const redirectPath = staffProfile ? '/dashboard' : guestAccount ? '/portal/bookings' : '/onboarding';
 
-      if (staffProfile) {
-        router.push('/dashboard');
-      } else if (guestAccount) {
-        router.push('/portal/bookings');
-      } else {
-        router.push('/onboarding');
-      }
+      // Use hard navigation to ensure auth cookies are sent on first protected-page request (mobile Safari).
+      window.location.href = redirectPath;
+      return;
 
-      router.refresh();
     } catch (error) {
       if (error instanceof Error && error.message === 'AUTH_TIMEOUT') {
         toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
