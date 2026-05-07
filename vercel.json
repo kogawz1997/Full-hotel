@@ -30,11 +30,11 @@
     },
     {
       "path": "/api/ota/process",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/expire-pending",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/trial-expiry",
@@ -42,7 +42,7 @@
     },
     {
       "path": "/api/cron/ota-sync",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     }
   ]
 }
