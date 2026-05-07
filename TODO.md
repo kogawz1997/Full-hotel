@@ -13,9 +13,9 @@
 
 - [x] **Onboarding wizard** → สร้าง `src/app/onboarding/` (3 steps)
 - [x] **Rate calendar UI** → สร้าง `src/app/dashboard/rates/page.tsx`
-- [ ] **Room type images** → แก้ `src/components/dashboard/rooms-client.tsx` + upload API
+- [x] **Room type images** → แก้ `src/components/dashboard/rooms-client.tsx` + upload API
 - [x] **Cancellation email** → แก้ `src/app/api/guest/bookings/[id]/route.ts`
-- [ ] **Pay at hotel** → แก้ booking-engine.tsx เพิ่ม payment method option
+- [x] **Pay at hotel** → แก้ booking-engine.tsx เพิ่ม payment method option
 
 ## 🟡 Sprint 3 — OTA-level UX
 
@@ -41,7 +41,7 @@
 - [ ] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
 - [ ] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
 - [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
-- [ ] **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
+- [x] **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
 - [ ] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
 - [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
@@ -64,11 +64,11 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] **useCounter hook** — animated number counter
 - [x] **AnimatedNumber component** — เลข count ขึ้นเมื่อ scroll เข้ามา
 - [x] **Landing page redesign** — Full hero image, stats, pricing 3 plans, testimonials, footer ครบ
-- [ ] **Hotel public page** — Airbnb-style gallery grid + sticky sidebar
-- [ ] **Booking engine** — animated step progress, trust badges
-- [ ] **Search page** — Map/List toggle, infinite scroll, compare mode
-- [ ] **Global page transitions** — page-enter animation
-- [ ] **Loading skeletons** — ทุก async section
+- [x] **Hotel public page** — Airbnb-style gallery grid + sticky sidebar
+- [x] **Booking engine** — animated step progress, trust badges
+- [x] **Search page** — Map/List toggle, infinite scroll, compare mode
+- [x] **Global page transitions** — page-enter animation
+- [x] **Loading skeletons** — ทุก async section
 
 
 ## Phase 6 — Launch Readiness Closed
@@ -224,7 +224,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ### Components
 - [ ] `src/components/public/HotelCard.tsx` — ย้าย HotelCard ออกจาก search/page.tsx
 - [x] `src/components/public/TrustBadges.tsx` — SSL, Secure Payment, Verified Hotel
-- [ ] PromptPay QR ใน payment flow
+- [x] PromptPay QR ใน payment flow
 
 ### SEO
 - [x] `src/app/sitemap.ts`

@@ -2,19 +2,10 @@
 
 อัปเดต: 2026-05-07
 
-งานคงค้างทั้งหมด: 42 งาน
+งานคงค้างทั้งหมด: 19 งาน
 
-## P1 — Deploy Gate (13 งาน)
+## P2 — Core Booking & UX (0 งาน)
 
-- [ ] **Regenerate package-lock.json** หลังเพิ่ม `@hookform/resolvers` และ `react-hook-form`  <!-- TODO.md:L151 -->
-- [ ] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`  <!-- TODO.md:L157 -->
-- [ ] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error  <!-- TODO.md:L158 -->
-- [ ] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**  <!-- TODO.md:L161 -->
-- [ ] รัน `npm run type-check` ให้ผ่าน 0 errors ก่อน deploy  <!-- TODO.md:L167 -->
-- [ ] **แก้ refund, deposit, reconcile routes** — ถ้าไม่มี `OMISE_SECRET_KEY` ใน production ต้อง **return error** ไม่ใช่ return mock success  <!-- TODO.md:L170 -->
-- [ ] เพิ่ม guard ใน `src/app/api/payments/refund/route.ts`  <!-- TODO.md:L183 -->
-- [ ] เพิ่ม guard ใน `src/app/api/payments/deposit/route.ts`  <!-- TODO.md:L184 -->
-- [ ] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`  <!-- TODO.md:L185 -->
 - [ ] **ซ่อน OTA channels ที่ยังไม่พร้อม** ออกจาก UI ลูกค้า  <!-- TODO.md:L188 -->
 - [ ] **เพิ่ม disclaimer** ใน channel settings: "การเชื่อมต่อ OTA ต้องการ API credentials จาก vendor โดยตรง"  <!-- TODO.md:L194 -->
 - [ ] **OTA sync cron** — เพิ่ม early return ถ้าไม่มี `channel.api_key` พร้อม log ที่ชัดเจน  <!-- TODO.md:L195 -->
