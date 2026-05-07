@@ -13,7 +13,7 @@
     "lint": "eslint . --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
     "check": "npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
-    "demo": "cp .env.demo .env.local && echo '✅ Demo env set — run: npm run dev'",
+    "demo": "cp .env.demo .env.local && echo '\u2705 Demo env set \u2014 run: npm run dev'",
     "backup": "node scripts/backup-supabase.mjs",
     "check:env": "node scripts/check-production-env.mjs",
     "smoke": "node scripts/smoke-test.mjs",
@@ -76,5 +76,12 @@
     "typescript": "^5",
     "autoprefixer": "^10.4.20",
     "@types/nodemailer": "^6.4.0"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x"
+  },
+  "packageManager": "npm@10.8.2"
+}
   }
 }
