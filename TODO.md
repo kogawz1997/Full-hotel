@@ -155,7 +155,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   # commit package-lock.json ที่ได้ใหม่
   ```
 - [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
-- [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
+
+- [ ] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
 - [x] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
