@@ -10,6 +10,8 @@
 - [x] **Wishlist page** → สร้าง `src/app/portal/wishlist/page.tsx` + `src/app/api/guest/wishlist/route.ts`
 - [x] **Terms of Service** → สร้าง `src/app/terms/page.tsx`
 - [x] **Privacy Policy (PDPA)** → สร้าง `src/app/privacy/page.tsx`
+
+- [x] **Email verification** → แก้ register flow แล้ว; สถานะใน Supabase Dashboard ต้องตรวจใน environment จริงอีกครั้ง
 - [x] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
 
 ## 🟠 Sprint 2 — Core features
@@ -44,7 +46,7 @@
 - [x] **Spa booking** → สร้าง `src/app/dashboard/spa/services/`, `spa/bookings/`
 - [x] **Maintenance** → สร้าง `src/app/dashboard/maintenance/page.tsx`
 - [x] **Multi-currency** → สร้าง `src/lib/currency.ts` + switcher
-- [x] **QR check-in** → สร้าง `src/app/portal/bookings/[code]/qr/page.tsx`
+  [x] **QR check-in** → สร้าง `src/app/portal/bookings/qr/page.tsx`
 - [x] **Image optimization** → สร้าง `src/app/api/storage/optimize/route.ts` (sharp)
 - [x] **DB indexes** → สร้าง `supabase/migrations/00006_performance_indexes.sql`
 
@@ -157,9 +159,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci`
-
-- [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error (verified on 2026-05-07)
+- [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci
+- [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
 ### 2. TypeScript errors ใน reservations route
 - [x] **เพิ่ม `paymentMethod` และ `ratePlanType` ใน `createReservationSchema`**
@@ -189,7 +190,8 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
 
 ### 4. OTA sync — ระบุชัดว่า placeholder
-- [x] **ซ่อน OTA channels ที่ยังไม่พร้อม** ออกจาก UI ลูกค้า
+
+- [x] **แสดง OTA channels ที่ยังไม่พร้อมเป็น Coming Soon** (ยังไม่ให้เชื่อมต่อจริง
   ```typescript
   // src/app/dashboard/channels/page.tsx
   // แสดง "Coming Soon" badge สำหรับ Booking.com, Agoda, Airbnb
@@ -248,11 +250,47 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 ---
 
-## 🆕 P0-P4 Launch Hardening Backlog (เพิ่มตามรีวิวล่าสุด)
+## 🚨 Go-Live Master Checklist (อัปเดตล่าสุด)
+
+> สถานะด้านล่างเป็น baseline สำหรับเปิดรับลูกค้าเชิงพาณิชย์จริง และยังต้อง verify กับ production env + monitoring จริง
+
+## 🆕 P0-P4 Launch Hardening Backlog (เพิ่มตามรีวิวล่าสุด)n
 
 ### 🔴 P0 — ต้องปิดก่อนเปิดรับลูกค้า
 
 #### 1) Build / TypeScript / CI
+- [ ] `npm run build` ผ่าน 100% บน CI
+- [ ] `npm run type-check` = 0 errors บน CI
+- [ ] `npm ci` clean install ผ่านบน CI
+- [ ] lock Node version ให้ตรงกันทุกที่ (.nvmrc / CI / runtime)
+- [ ] ตั้ง CI ให้ fail ถ้า build/type-check fail
+
+#### 2) Payment Hardening
+- [ ] webhook verification จริง
+- [ ] payment retry
+- [ ] duplicate payment protection
+- [ ] refund flow
+- [ ] partial refund
+- [ ] chargeback status
+- [ ] payment timeout handling
+- [ ] reconcile jobs
+
+#### 3) Reservation Safety
+- [ ] overbooking prevention test จริง
+- [ ] race-condition test
+- [ ] room inventory lock
+- [ ] pending payment expiration
+- [ ] auto release room inventory
+
+#### 4) Security
+- [ ] audit logs ครบทุก action
+- [ ] rate limit ทุก auth/payment endpoint
+- [ ] brute-force protection
+- [ ] session/device tracking
+- [ ] IP anomaly detection
+- [ ] secure upload validation
+- [ ] CSP/security headers
+- [ ] secret rotation guide
 - [ ] `npm run build` ต้องผ่าน 100% บน CI
 - [ ] `npm run type-check` = 0 errors บน CI
 - [ ] `npm ci` clean install ผ่านบน CI ทุกครั้ง
@@ -327,10 +365,13 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] upsell system
 - [ ] add-on marketplace
 
-### 🟡 P2 — ทำให้ดูระดับตลาด
+### 🟡 P2 — ทำให้ “ดูระดับตลาด”
 
 #### 9) UX Polish
+- [ ] skeleton loading ทุกหน้า
+### 🟡 P2 — ทำให้ดูระดับตลาด
 - [ ] skeleton loading ทุกหน้าสำคัญ
+
 - [ ] proper empty states
 - [ ] smooth transitions
 - [ ] better mobile gestures
@@ -381,8 +422,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] AI revenue forecasting
 - [ ] AI occupancy prediction
 - [ ] AI pricing assistant
-
-### 🟣 P4 — จุดที่ตลาดใหญ่มี
+### 🟣 P4 — จุดที่ “ตลาดใหญ่” มี
 
 #### 15) Ecosystem
 - [ ] public API
