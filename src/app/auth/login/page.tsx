@@ -19,15 +19,44 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
+    try {
+      const supabase = createClient();
+      const result = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('AUTH_TIMEOUT')), 15000),
+        ),
+      ]);
+
+      if (result.error) {
+        toast.error(result.error.message);
+        return;
+      }
+
+      const [{ data: staffProfile }, { data: guestAccount }] = await Promise.all([
+        supabase.from('user_profiles').select('id').eq('id', result.data.user.id).maybeSingle(),
+        supabase.from('guest_accounts').select('id').eq('id', result.data.user.id).maybeSingle(),
+      ]);
+
       toast.success('ยินดีต้อนรับกลับ');
-      router.push('/dashboard');
+
+      if (staffProfile) {
+        router.push('/dashboard');
+      } else if (guestAccount) {
+        router.push('/portal/bookings');
+      } else {
+        router.push('/onboarding');
+      }
+
       router.refresh();
+    } catch (error) {
+      if (error instanceof Error && error.message === 'AUTH_TIMEOUT') {
+        toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      } else {
+        toast.error('ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง');
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
