@@ -14,6 +14,7 @@
 - [x] **Email verification** → แก้ register flow แล้ว; สถานะใน Supabase Dashboard ต้องตรวจใน environment จริงอีกครั้ง
 - [x] **Email verification** → เปิดใน Supabase Dashboard + แก้ register flow
 
+
 ## 🟠 Sprint 2 — Core features
 
 - [x] **Onboarding wizard** → สร้าง `src/app/onboarding/` (3 steps)
@@ -159,7 +160,6 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
   npm install
   # commit package-lock.json ที่ได้ใหม่
   ```
-
 - [x] **ยืนยัน clean install ผ่าน**: `rm -rf node_modules && npm ci>>>>>>> main
 - [x] **ยืนยัน build ผ่าน**: `npm run build` ต้องไม่มี error
 
@@ -191,6 +191,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] เพิ่ม guard ใน `src/app/api/payments/charge/route.ts`
 
 ### 4. OTA sync — ระบุชัดว่า placeholder
+- [x] **แสดง OTA channels ที่ยังไม่พร้อมเป็น Coming Soon** (ยังไม่ให้เชื่อมต่อจริง)
   ```typescript
   // src/app/dashboard/channels/page.tsx
   // แสดง "Coming Soon" badge สำหรับ Booking.com, Agoda, Airbnb
@@ -253,6 +254,15 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 > สถานะด้านล่างเป็น baseline สำหรับเปิดรับลูกค้าเชิงพาณิชย์จริง และยังต้อง verify กับ production env + monitoring จริง
 
+### 🔴 P0 — ต้องปิดก่อนเปิดรับลูกค้า
+
+#### 1) Build / TypeScript / CI
+- [x] `npm run build` ผ่าน 100% บน CI
+- [x] `npm run type-check` = 0 errors บน CI
+- [x] `npm ci` clean install ผ่านบน CI
+- [x] lock Node version ให้ตรงกันทุกที่ (.nvmrc / CI / runtime)
+- [x] ตั้ง CI ให้ fail ถ้า build/type-check fail
+
 #### 2) Payment Hardening
 - [ ] webhook verification จริง
 - [ ] payment retry
@@ -281,6 +291,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] secret rotation guide
 
 ### 🟠 P1 — ระบบตลาดจริงต้องมี
+
 #### 5) OTA / Channel Manager — Real Sync
 - [ ] Booking.com sync worker
 - [ ] Agoda sync worker
