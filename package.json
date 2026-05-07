@@ -2,6 +2,10 @@
   "name": "maitri-pms",
   "version": "0.3.0",
   "private": true,
+  "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -72,10 +76,5 @@
     "typescript": "^5",
     "autoprefixer": "^10.4.20",
     "@types/nodemailer": "^6.4.0"
-{
-  "packageManager": "npm@10.8.2",
-  "engines": {
-    "node": "20.x"
   }
-}
 }
