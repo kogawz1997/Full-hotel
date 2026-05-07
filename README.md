@@ -16,6 +16,7 @@ AI-first · Multi-tenant SaaS · Guest Portal · Channel Manager · e-Tax · ท
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Auth+DB+Realtime-3FCF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Claude AI](https://img.shields.io/badge/Claude-3.5_Sonnet-CC785C?style=flat-square)](https://anthropic.com)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel)](https://vercel.com)
 [![License MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)](LICENSE)
 
@@ -29,7 +30,7 @@ AI-first · Multi-tenant SaaS · Guest Portal · Channel Manager · e-Tax · ท
 
 ---
 
-## ภาพรวม   
+## ภาพรวม
 
 Maitri คือ **Hotel PMS แบบ SaaS สำหรับตลาดไทย** รวมทุกสิ่งที่โรงแรมต้องการในที่เดียว — จัดการห้องพัก รับจอง ออกใบกำกับภาษีอิเล็กทรอนิกส์ ส่ง ทร.30 อัตโนมัติ ตอบแขกด้วย AI ใน LINE/WhatsApp และมีหน้า Booking Engine + Guest Portal สำหรับแขกจองตรง
 
@@ -568,6 +569,6 @@ MIT © 2026 Maitri Hospitality Tech
 
 Built with ❤️ in Thailand 🇹🇭
 
-Powered by KOGA.EXE · [Supabase](https://supabase.com) · [Vercel](https://vercel.com)
+Powered by [Claude](https://anthropic.com) · [Supabase](https://supabase.com) · [Vercel](https://vercel.com)
 
 </div>

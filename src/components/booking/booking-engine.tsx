@@ -7,6 +7,7 @@ import { formatCurrency } from '@/lib/utils';
 import { PriceGraph } from '@/components/booking/price-graph';
 import { GuestChatWidget } from '@/components/booking/guest-chat-widget';
 import { CurrencySwitcher } from '@/components/ui/currency-switcher';
+import { TrustBadges } from '@/components/public/TrustBadges';
 import { format, differenceInDays, addDays } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -587,6 +588,9 @@ export function BookingEngine({ hotel, roomTypes: initialRoomTypes }: { hotel: a
 
         <div className="bg-white rounded-2xl border border-black/5 p-6 text-left mb-6">
           <h3 className="font-semibold text-[#2A2522] mb-4">สรุปการจอง</h3>
+          <div className="mb-4">
+            <TrustBadges />
+          </div>
           <div className="space-y-3 text-sm">
             <SummaryRow label="โรงแรม" value={hotel.name} />
             <SummaryRow label="ห้องพัก" value={selected?.name} />
