@@ -470,15 +470,15 @@ SENTRY_PROJECT=maitri-pms
 
 **ไฟล์ที่ต้องสร้าง:**
 ```
-public/manifest.json
+public/manifest.webmanifest
 public/icons/
-  icon-192.png
-  icon-512.png
-  icon-maskable-512.png
+  icon-192.svg
+  icon-512.svg
+  icon-512.svg
 src/app/sw.ts                    — service worker (offline support)
 ```
 
-**`manifest.json`:**
+**`manifest.webmanifest`:**
 ```json
 {
   "name": "Maitri PMS",

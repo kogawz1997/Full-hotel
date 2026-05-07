@@ -22,7 +22,7 @@ AI-first · Multi-tenant SaaS · Guest Portal · Channel Manager · e-Tax · ท
 
 <br/>
 
-[**Live Demo**](https://maitri-demo.vercel.app) · [Quick Start](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [Roadmap](#-roadmap)
+[Quick Start](#-quick-start) · [Features](#-features) · [Architecture](#-architecture) · [Roadmap](#-roadmap)
 
 <br/>
 
@@ -35,6 +35,16 @@ AI-first · Multi-tenant SaaS · Guest Portal · Channel Manager · e-Tax · ท
 Maitri คือ **Hotel PMS แบบ SaaS สำหรับตลาดไทย** รวมทุกสิ่งที่โรงแรมต้องการในที่เดียว — จัดการห้องพัก รับจอง ออกใบกำกับภาษีอิเล็กทรอนิกส์ ส่ง ทร.30 อัตโนมัติ ตอบแขกด้วย AI ใน LINE/WhatsApp และมีหน้า Booking Engine + Guest Portal สำหรับแขกจองตรง
 
 สร้างด้วย **Next.js 15 App Router**, **Supabase**, **Claude 3.5 Sonnet** พร้อม deploy บน **Vercel** ในคลิกเดียว
+
+### สถานะปัจจุบัน — อัปเดต 2026-05-07
+
+- โปรเจคถูกคลีนให้โฟกัส **Vercel + Next.js + Supabase** เป็นหลัก
+- ลบไฟล์ deployment ทางเลือกที่ไม่ได้ใช้จริง เช่น Docker/Render/Fly/Railway/Koyeb/Nixpacks/PM2
+- ลบ config/test placeholder ที่ต้องพึ่ง dependency ที่ไม่ได้อยู่ใน package.json เช่น Jest/Playwright specs
+- ใช้ PWA manifest ตัวเดียว: `public/manifest.webmanifest`
+- ใช้ cron trial ตัวเดียว: `/api/cron/trial-expire`
+- package ปัจจุบัน: Next.js `15.5.9`, React `18.3.1`, Node `20.x`, npm `10.9.x`
+
 
 ---
 
@@ -414,12 +424,12 @@ maitri/
 
 | # | Feature | ไฟล์หลัก | สถานะ |
 |---|---------|---------|-------|
-| 1 | **Booking confirmation email** | `src/app/api/reservations/route.ts` | ☐ |
-| 2 | **Guest reset password page** | `src/app/portal/reset-password/page.tsx` | ☐ |
-| 3 | **Wishlist page + API** | `src/app/portal/wishlist/` | ☐ |
-| 4 | **Terms of Service** | `src/app/terms/page.tsx` | ☐ |
-| 5 | **Privacy Policy (PDPA)** | `src/app/privacy/page.tsx` | ☐ |
-| 6 | **Email verification flow** | Supabase config + login UI | ☐ |
+| 1 | **Booking confirmation email** | `src/app/api/reservations/route.ts` | ✅ |
+| 2 | **Guest reset password page** | `src/app/portal/reset-password/page.tsx` | ✅ |
+| 3 | **Wishlist page + API** | `src/app/portal/wishlist/` | ✅ |
+| 4 | **Terms of Service** | `src/app/terms/page.tsx` | ✅ |
+| 5 | **Privacy Policy (PDPA)** | `src/app/privacy/page.tsx` | ✅ |
+| 6 | **Email verification flow** | Supabase config + login UI | ✅ |
 
 ---
 
@@ -427,12 +437,12 @@ maitri/
 
 | # | Feature | ไฟล์หลัก | สถานะ |
 |---|---------|---------|-------|
-| 7 | **Onboarding wizard** | `src/app/onboarding/` (3 steps) | ☐ |
-| 8 | **Rate calendar UI** | `src/app/dashboard/rates/page.tsx` | ☐ |
-| 9 | **Room type image upload** | `src/components/dashboard/rooms-client.tsx` | ☐ |
-| 10 | **Subscription billing (Stripe)** | `src/app/dashboard/billing/` | ☐ |
-| 11 | **Cancellation email** | `src/app/api/guest/bookings/[id]/route.ts` | ☐ |
-| 12 | **Pay at hotel option** | `src/components/booking/booking-engine.tsx` | ☐ |
+| 7 | **Onboarding wizard** | `src/app/onboarding/` (3 steps) | ✅ |
+| 8 | **Rate calendar UI** | `src/app/dashboard/rates/page.tsx` | ✅ |
+| 9 | **Room type image upload** | `src/components/dashboard/rooms-client.tsx` | ✅ |
+| 10 | **Subscription billing (Stripe)** | `src/app/dashboard/billing/` | ✅ |
+| 11 | **Cancellation email** | `src/app/api/guest/bookings/[id]/route.ts` | ✅ |
+| 12 | **Pay at hotel option** | `src/components/booking/booking-engine.tsx` | ✅ |
 
 ---
 
@@ -440,13 +450,13 @@ maitri/
 
 | # | Feature | ไฟล์หลัก | สถานะ |
 |---|---------|---------|-------|
-| 13 | **Search page** `/search` | `src/app/search/` + `src/app/api/public/search/` | ☐ |
-| 14 | **Price graph 30 วัน** | `src/components/booking/price-graph.tsx` | ☐ |
-| 15 | **Photo lightbox** | `src/components/ui/lightbox.tsx` | ☐ |
-| 16 | **Urgency indicators** | booking-engine.tsx (ใช้ available_rooms ที่มีแล้ว) | ☐ |
-| 17 | **Guest AI chatbot widget** | `src/components/booking/guest-chat-widget.tsx` | ☐ |
-| 18 | **Multi-currency display** | `src/lib/currency.ts` + switcher | ☐ |
-| 19 | **Loyalty points สำหรับแขก** | my-bookings-client.tsx + API | ☐ |
+| 13 | **Search page** `/search` | `src/app/search/` + `src/app/api/public/search/` | ✅ |
+| 14 | **Price graph 30 วัน** | `src/components/booking/price-graph.tsx` | ✅ |
+| 15 | **Photo lightbox** | `src/components/ui/lightbox.tsx` | ✅ |
+| 16 | **Urgency indicators** | booking-engine.tsx (ใช้ available_rooms ที่มีแล้ว) | ✅ |
+| 17 | **Guest AI chatbot widget** | `src/components/booking/guest-chat-widget.tsx` | ✅ |
+| 18 | **Multi-currency display** | `src/lib/currency.ts` + switcher | ✅ |
+| 19 | **Loyalty points สำหรับแขก** | my-bookings-client.tsx + API | ✅ |
 
 ---
 
@@ -454,14 +464,14 @@ maitri/
 
 | # | Feature | ไฟล์หลัก | สถานะ |
 |---|---------|---------|-------|
-| 20 | **Redis rate limiting** | `src/lib/security/rate-limit.ts` → Upstash | ☐ |
-| 21 | **Cookie consent (PDPA)** | `src/components/ui/cookie-consent.tsx` | ☐ |
-| 22 | **Data export (PDPA)** | `src/app/api/guest/export/route.ts` | ☐ |
-| 23 | **Sentry error tracking** | `sentry.*.config.ts` + next.config.js | ☐ |
-| 24 | **PWA manifest + icons** | `public/manifest.json` + SW | ☐ |
-| 25 | **OpenGraph images** | `src/app/h/[slug]/opengraph-image.tsx` | ☐ |
-| 26 | **Image optimization** | `src/app/api/storage/optimize/route.ts` (sharp) | ☐ |
-| 27 | **DB performance indexes** | `supabase/migrations/00006_performance.sql` | ☐ |
+| 20 | **Redis rate limiting** | `src/lib/security/rate-limit.ts` → Upstash | ✅ |
+| 21 | **Cookie consent (PDPA)** | `src/components/ui/cookie-consent.tsx` | ✅ |
+| 22 | **Data export (PDPA)** | `src/app/api/guest/export/route.ts` | ✅ |
+| 23 | **Sentry error tracking** | `sentry.*.config.ts` + next.config.js | ✅ |
+| 24 | **PWA manifest + icons** | `public/manifest.webmanifest` + SW | ✅ |
+| 25 | **OpenGraph images** | `src/app/h/[slug]/opengraph-image.tsx` | ✅ |
+| 26 | **Image optimization** | `src/app/api/storage/optimize/route.ts` (sharp) | ✅ |
+| 27 | **DB performance indexes** | `supabase/migrations/00006_performance.sql` | ✅ |
 
 ---
 
