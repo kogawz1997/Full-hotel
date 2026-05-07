@@ -1,5 +1,8 @@
 # Maitri — Quick TODO
 
+> Last updated: 2026-05-07
+> Maintainer/Credit: **KOGA.EXE**
+
 ## 🔴 Sprint 1 — ทำก่อน launch
 
 - [x] **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
@@ -242,3 +245,155 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] Compare hotels feature (2-3 โรงแรม side-by-side)
 - [x] Last-minute deals section
 - [x] Pre-stay direct message to hotel
+
+---
+
+## 🆕 P0-P4 Launch Hardening Backlog (เพิ่มตามรีวิวล่าสุด)
+
+### 🔴 P0 — ต้องปิดก่อนเปิดรับลูกค้า
+
+#### 1) Build / TypeScript / CI
+- [ ] `npm run build` ต้องผ่าน 100% บน CI
+- [ ] `npm run type-check` = 0 errors บน CI
+- [ ] `npm ci` clean install ผ่านบน CI ทุกครั้ง
+- [ ] lock Node version ให้ตรงกันทุกที่ (local/CI/runtime)
+- [ ] ตั้ง branch protection ให้ CI fail แล้ว merge ไม่ได้
+
+#### 2) Payment Hardening
+- [ ] webhook verification จริงทุก provider
+- [ ] payment retry strategy (safe retry)
+- [ ] duplicate payment protection (idempotency)
+- [ ] refund flow test ครบ
+- [ ] partial refund flow + test
+- [ ] chargeback status handling
+- [ ] payment timeout handling
+- [ ] reconcile jobs schedule + alert
+
+#### 3) Reservation Safety
+- [ ] overbooking prevention test จริง (concurrent)
+- [ ] race-condition test สำหรับจองห้องเดียวกันพร้อมกัน
+- [ ] room inventory lock coverage test
+- [ ] pending payment expiration ทำงานจริงทุก env
+- [ ] auto-release room inventory test
+
+#### 4) Security
+- [ ] audit logs ครบทุก action สำคัญ
+- [ ] rate limit ครอบคลุม auth/payment endpoints ทั้งหมด
+- [ ] brute-force protection policy
+- [ ] session/device tracking
+- [ ] IP anomaly detection
+- [ ] secure upload validation ครบทุก upload route
+- [ ] CSP/security headers review
+- [ ] secret rotation guide (ops runbook)
+
+### 🟠 P1 — ระบบตลาดจริงต้องมี
+
+#### 5) OTA / Channel Manager — Real Sync
+- [ ] Booking.com sync worker
+- [ ] Agoda sync worker
+- [ ] Airbnb sync worker
+- [ ] retry queue
+- [ ] conflict resolution
+- [ ] rate limit handling
+- [ ] webhook sync
+- [ ] inventory reconciliation
+
+#### 6) Pricing Engine
+- [ ] dynamic pricing
+- [ ] seasonal pricing
+- [ ] occupancy-based pricing
+- [ ] weekday/weekend rules
+- [ ] promo engine
+- [ ] coupon engine
+- [ ] minimum stay rules
+- [ ] closed-to-arrival/departure
+
+#### 7) Accounting
+- [ ] invoice numbering logic
+- [ ] folio split
+- [ ] tax adjustments
+- [ ] nightly audit
+- [ ] accounting exports
+- [ ] VAT edge cases
+- [ ] multi-payment folios
+
+#### 8) Guest Experience
+- [ ] digital check-in
+- [ ] QR self check-in
+- [ ] digital receipt
+- [ ] loyalty dashboard
+- [ ] push notifications
+- [ ] booking modification flow
+- [ ] upsell system
+- [ ] add-on marketplace
+
+### 🟡 P2 — ทำให้ดูระดับตลาด
+
+#### 9) UX Polish
+- [ ] skeleton loading ทุกหน้าสำคัญ
+- [ ] proper empty states
+- [ ] smooth transitions
+- [ ] better mobile gestures
+- [ ] sticky mobile actions
+- [ ] optimistic UI
+- [ ] accessibility audit
+- [ ] keyboard navigation
+
+#### 10) Search Experience
+- [ ] map clustering
+- [ ] smart filters
+- [ ] AI recommendations
+- [ ] recently viewed
+- [ ] compare hotels
+- [ ] personalized ranking
+
+#### 11) SEO / Marketing
+- [ ] hotel SEO pages
+- [ ] destination landing pages
+- [ ] structured data ครบ
+- [ ] affiliate/referral system
+- [ ] email marketing automation
+- [ ] abandoned booking recovery
+
+### 🔵 P3 — Enterprise / Scale
+
+#### 12) Reliability Engineering
+- [ ] queue workers
+- [ ] dead-letter queue
+- [ ] async processing
+- [ ] failover jobs
+- [ ] backup automation
+- [ ] health monitoring
+- [ ] uptime monitoring
+- [ ] tracing/observability
+
+#### 13) Multi-property
+- [ ] chain hotel support
+- [ ] central inventory
+- [ ] central reporting
+- [ ] shared guest profiles
+- [ ] organization hierarchy
+
+#### 14) AI Layer
+- [ ] AI intent routing
+- [ ] AI escalation
+- [ ] AI suggested replies
+- [ ] AI revenue forecasting
+- [ ] AI occupancy prediction
+- [ ] AI pricing assistant
+
+### 🟣 P4 — จุดที่ตลาดใหญ่มี
+
+#### 15) Ecosystem
+- [ ] public API
+- [ ] webhook platform
+- [ ] plugin system
+- [ ] partner integrations
+- [ ] marketplace
+- [ ] external developer docs
+
+#### 16) Mobile Apps
+- [ ] React Native app
+- [ ] housekeeping app
+- [ ] owner analytics app
+- [ ] guest app

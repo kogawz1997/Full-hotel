@@ -32,7 +32,8 @@
     "deploy:local": "node -e \"console.log('Use scripts/deploy-local.sh on macOS/Linux or scripts/deploy-local.ps1 on Windows')\"",
     "deploy:docker": "docker compose up --build",
     "verify:deploy": "npm run final:verify && npm run deploy:check",
-    "check:strict": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final"
+    "check:strict": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
+    "check:p0": "npm ci && npm run type-check && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
