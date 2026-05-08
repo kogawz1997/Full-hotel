@@ -1,5 +1,39 @@
 # Maitri — Quick TODO
 
+> ✅ อัปเดตล่าสุด: งานในรายการเดิมทั้งหมดถูกปิดแล้ว (checked `[x]` ครบ)
+
+## ✅ Snapshot สถานะรวม
+
+- งานตาม sprint/phase/checklist เดิม: **Done ครบ**
+- เหลือเฉพาะงาน **Operational follow-up** ที่ต้องทำบน environment จริงก่อน go-live
+
+## 🧭 งานที่เหลือจริง (Actionable)
+
+### ✅ ทำได้ทันทีโดยทีม Dev (ใน repo นี้)
+- [ ] รัน `npm run check:env` และเก็บผลลัพธ์เป็นหลักฐานก่อน deploy
+- [ ] รัน smoke test หลัง set env ครบ (`/api/ops/smoke-test`)
+- [ ] ตรวจ launch readiness endpoint (`/api/ops/readiness`) ให้ผ่านทุกหัวข้อ
+- [ ] ทำ deployment checklist sign-off (ผู้รับผิดชอบ + เวลา + environment)
+
+### ⛔ ทำในโค้ดอย่างเดียวไม่ได้ (ต้องพึ่ง Ops/Vendor/Production Access)
+- [ ] ตั้งค่า `SENDGRID_FROM_EMAIL` ใน production environment
+  - รายละเอียด: ต้องเป็น verified sender/domain ใน SendGrid
+- [ ] ตั้งค่า `UPSTASH_REDIS_REST_URL` และ `UPSTASH_REDIS_REST_TOKEN`
+  - รายละเอียด: ต้องสร้าง Redis database ที่ Upstash ก่อน
+- [ ] ตั้งค่า `STRIPE_SECRET_KEY` (ถ้าเปิดใช้งาน billing)
+  - รายละเอียด: ต้องใช้ live key จาก Stripe account จริง
+- [ ] ตั้งค่า `SENTRY_DSN` (ถ้าเปิดใช้งาน monitoring)
+  - รายละเอียด: ต้องสร้าง project ใน Sentry ก่อน
+- [ ] ตรวจสถานะ Email verification ใน Supabase Dashboard บน environment จริง
+  - รายละเอียด: ต้องใช้สิทธิ์เข้าถึง Supabase project production
+
+### 📌 งานเพิ่มที่ควรใส่ใน TODO (Next)
+- [ ] เพิ่ม owner ต่อหัวข้อ (Dev/Ops/Finance) ให้ครบทุกงานค้าง
+- [ ] เพิ่ม due date ต่อหัวข้อค้างทั้งหมด
+- [ ] เพิ่มช่องสถานะหลักฐาน (ลิงก์ dashboard / screenshot / log)
+- [ ] เพิ่ม rollback plan สั้น ๆ ต่อ environment ที่ deploy
+
+---
 ## 🔴 Sprint 1 — ทำก่อน launch
 
 - [x] **Booking confirmation email** → แก้ `src/app/api/reservations/route.ts` เพิ่ม emailAdapter.sendMessage()
@@ -55,6 +89,10 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ```
 
 ดูรายละเอียดแต่ละข้อเพิ่มเติมใน **ROADMAP.md**
+
+ดูรายละเอียดทุกไฟล์ที่แสดงบน GitHub ล่าสุดใน `docs/GITHUB_FILE_STATUS.md`
+
+ดูสถานะเอกสาร Markdown ล่าสุดทั้งโปรเจกต์ใน `docs/MARKDOWN_DOC_STATUS.md`
 
 ## 🎨 Sprint UX/UI — Luxury Redesign
 
