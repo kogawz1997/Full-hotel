@@ -33,6 +33,15 @@
 - [ ] เพิ่มช่องสถานะหลักฐาน (ลิงก์ dashboard / screenshot / log)
 - [ ] เพิ่ม rollback plan สั้น ๆ ต่อ environment ที่ deploy
 
+### 🧪 ผลการลองทำทันที (ล่าสุด 2026-05-08)
+- [x] ทดลองรัน `npm run check:env`
+  - ผล: พบ required vars ขาด 5 ตัว (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET`)
+- [x] ทดลองสตาร์ทแอป (`npm run demo` + `npm run dev`) เพื่อให้ smoke วิ่ง
+  - ผล: แก้แล้ว (unify route segment `booking/[slug]`) แอปรันได้
+- [x] ทดลองรัน smoke test (`npm run smoke`) หลังแก้ route
+  - ผล: ผ่าน 9/13, เหลือ fail 4 จุด (`/api/health`=503, `/api/ops/readiness`=401, `/api/public/search`=500, `/api/billing` expected 401 แต่ได้ 405)
+- [ ] แก้ smoke failures ที่เหลือ 4 จุด แล้วรันซ้ำให้ผ่านครบ
+
 ---
 ## 🔴 Sprint 1 — ทำก่อน launch
 

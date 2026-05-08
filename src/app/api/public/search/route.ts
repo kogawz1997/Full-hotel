@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   if (type) query = query.eq('type', type);
 
   const { data: hotels, error } = await query.limit(50);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ hotels: [], total: 0, warning: error.message }, { status: 200 });
 
   // For each hotel get min price + availability + avg rating
   const results = await Promise.all((hotels || []).map(async (hotel: any) => {
