@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { ACCESS_POLICIES } from '@/lib/security/access-policies';
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -18,10 +19,31 @@ const ROUTE_ROLES: Array<{ prefix: string; roles: string[] }> = [
   { prefix: '/dashboard/spa', roles: ['owner', 'admin', 'manager'] },
   { prefix: '/dashboard/loyalty', roles: ['owner', 'admin', 'manager'] },
   { prefix: '/dashboard/settings', roles: ['owner', 'admin', 'manager'] },
+  { prefix: '/dashboard/maintenance', roles: ['owner', 'admin', 'manager', 'maintenance'] },
+  { prefix: '/dashboard/concierge', roles: ['owner', 'admin', 'manager', 'concierge'] },
+  { prefix: '/dashboard/security', roles: ['owner', 'admin', 'manager', 'security'] },
+  { prefix: '/dashboard/accounting-ops', roles: ['owner', 'admin', 'accounting'] },
+  { prefix: '/dashboard/rbac', roles: ['owner', 'admin'] },
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  const portalHost = process.env.NEXT_PUBLIC_PORTAL_HOST;
+  const backofficeHost = process.env.NEXT_PUBLIC_BACKOFFICE_HOST;
+  const host = request.nextUrl.host;
+
+  // Optional host split: serve portal and backoffice on separate domains
+  if (portalHost && backofficeHost) {
+    const isPortalPath = pathname.startsWith('/portal');
+    const targetHost = isPortalPath ? portalHost : backofficeHost;
+    if (host !== targetHost) {
+      const url = request.nextUrl.clone();
+      url.host = targetHost;
+      return NextResponse.redirect(url);
+    }
+  }
+
 
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
@@ -42,9 +64,69 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+
+
+
+  // ─── Access policy enforcement (session timeout + 2FA baseline) ───
+  if (user && (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/backoffice'))) {
+    const { data: policyProfile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const role = (policyProfile?.role || 'staff') as keyof typeof ACCESS_POLICIES.sessionTimeoutMinutes;
+    const timeoutMin = ACCESS_POLICIES.sessionTimeoutMinutes[role] || ACCESS_POLICIES.sessionTimeoutMinutes.staff;
+    const signedAt = user.last_sign_in_at ? new Date(user.last_sign_in_at).getTime() : Date.now();
+    const expired = (Date.now() - signedAt) > timeoutMin * 60_000;
+    if (expired) {
+      return NextResponse.redirect(new URL('/api/auth/logout?next=/backoffice/login?error=session_expired', request.url));
+    }
+
+    if (ACCESS_POLICIES.require2FA.includes(role as any)) {
+      const mfaVerified = Boolean((user.user_metadata as any)?.mfa_verified);
+      if (!mfaVerified) {
+        return NextResponse.redirect(new URL('/backoffice/login?error=2fa_required', request.url));
+      }
+    }
+  }
+
+  // ─── Separate customer portal vs internal backoffice ─────────────
+  if (pathname.startsWith('/backoffice') || pathname.startsWith('/auth') || pathname.startsWith('/portal/login')) {
+    if (user) {
+      const [{ data: profile }, { data: guestAccount }] = await Promise.all([
+        supabase.from('user_profiles').select('id').eq('id', user.id).maybeSingle(),
+        supabase.from('guest_accounts').select('id').eq('id', user.id).maybeSingle(),
+      ]);
+
+      if ((pathname.startsWith('/backoffice') || pathname.startsWith('/auth')) && guestAccount) {
+        return NextResponse.redirect(new URL('/portal/bookings', request.url));
+      }
+
+      if (pathname.startsWith('/portal/login') && profile) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    }
+  }
+
+  // ─── Web admin area ─────────────────────────────────────────────
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+    if (!user) return NextResponse.redirect(new URL('/admin/login', request.url));
+
+    const { data: adminProfile } = await supabase
+      .from('user_profiles')
+      .select('role, active')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!adminProfile || !adminProfile.active || !['owner', 'admin'].includes(adminProfile.role || '')) {
+      return NextResponse.redirect(new URL('/backoffice/login?error=forbidden', request.url));
+    }
+  }
+
   // ─── Hotel staff dashboard ───────────────────────────────────────
   if (pathname.startsWith('/dashboard')) {
-    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url));
+    if (!user) return NextResponse.redirect(new URL('/backoffice/login', request.url));
     // Make sure they're hotel staff (not a guest account)
     const { data: profile } = await supabase
       .from('user_profiles')
@@ -52,7 +134,7 @@ export async function middleware(request: NextRequest) {
       .eq('id', user.id)
       .single();
     if (!profile) return NextResponse.redirect(new URL('/onboarding', request.url));
-    if (!profile.active) return NextResponse.redirect(new URL('/auth/login?error=inactive', request.url));
+    if (!profile.active) return NextResponse.redirect(new URL('/backoffice/login?error=inactive', request.url));
     if (!profile.organization_id) return NextResponse.redirect(new URL('/onboarding', request.url));
 
     const { data: hotel } = await supabase
@@ -107,5 +189,9 @@ export const config = {
     '/portal/bookings/:path*',
     '/portal/profile/:path*',
     '/portal/wishlist/:path*',
+    '/admin/:path*',
+    '/auth/:path*',
+    '/backoffice/:path*',
+    '/portal/login',
   ],
 };

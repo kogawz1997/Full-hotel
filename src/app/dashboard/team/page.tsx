@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { TopBar } from '@/components/layout/top-bar';
-import { UserPlus, Shield, Crown, Users, Sparkles, Bed, Eye, Pencil, UserX } from 'lucide-react';
+import { UserPlus, Shield, Crown, Users, Sparkles, Bed, Eye, Pencil, UserX, Wrench } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ROLE_META: Record<string, { label: string; icon: any; description: string; color: string }> = {
@@ -15,6 +16,7 @@ const ROLE_META: Record<string, { label: string; icon: any; description: string;
   manager:     { label: 'Manager',    icon: Users,   description: 'Ops, การเงิน, รายงาน', color: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200' },
   front_desk:  { label: 'Front Desk', icon: Pencil,  description: 'จอง, Inbox, Check-in/out', color: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200' },
   housekeeping:{ label: 'Housekeeping',icon: Sparkles, description: 'งานแม่บ้านเท่านั้น', color: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200' },
+  maintenance: { label: 'Maintenance', icon: Wrench, description: 'งานซ่อมบำรุงและแจ้งงานช่าง', color: 'bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200' },
   staff:       { label: 'Staff',      icon: Eye,     description: 'View-only', color: 'bg-secondary text-muted-foreground' },
 };
 
@@ -31,12 +33,17 @@ export default function TeamPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('front_desk');
+  const [newPassword, setNewPassword] = useState('');
+  const [newFullName, setNewFullName] = useState('');
   const [inviting, setInviting] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [editMember, setEditMember] = useState<Member | null>(null);
   const [editRole, setEditRole] = useState('');
   const [saving, setSaving] = useState(false);
+  const [staffLoginLink, setStaffLoginLink] = useState('');
 
   async function load() {
     setLoading(true);
@@ -72,6 +79,33 @@ export default function TeamPage() {
     } finally { setInviting(false); }
   }
 
+
+  async function handleCreateAccount(e: React.FormEvent) {
+    e.preventDefault();
+    if (!inviteEmail.trim() || !newPassword.trim() || !newFullName.trim()) return;
+    setCreating(true);
+    try {
+      const res = await fetch('/api/team/create-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: inviteEmail.trim().toLowerCase(),
+          password: newPassword,
+          fullName: newFullName,
+          role: inviteRole,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success('สร้างบัญชีพนักงานสำเร็จ');
+      setShowCreate(false);
+      setInviteEmail(''); setNewPassword(''); setNewFullName('');
+      load();
+    } catch (e: any) {
+      toast.error(e.message || 'เกิดข้อผิดพลาด');
+    } finally { setCreating(false); }
+  }
+
   async function handleUpdateMember(memberId: string, updates: Record<string, any>) {
     setSaving(true);
     try {
@@ -90,6 +124,20 @@ export default function TeamPage() {
     } finally { setSaving(false); }
   }
 
+
+  async function generateStaffLoginLink() {
+    try {
+      const res = await fetch('/api/team/staff-login-link', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'สร้างลิงก์ไม่สำเร็จ');
+      setStaffLoginLink(data.loginUrl);
+      await navigator.clipboard.writeText(data.loginUrl).catch(() => undefined);
+      toast.success('สร้างลิงก์ login พนักงานแล้ว (คัดลอกให้อัตโนมัติ)');
+    } catch (e: any) {
+      toast.error(e.message || 'สร้างลิงก์ไม่สำเร็จ');
+    }
+  }
+
   const activeCount = members.filter(m => m.active).length;
 
   return (
@@ -98,11 +146,13 @@ export default function TeamPage() {
         title="ทีมงาน"
         description={`${activeCount} คนที่ active`}
         action={
-          <Button size="sm" onClick={() => setShowInvite(true)}>
+          <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => setShowInvite(true)}>
             <UserPlus className="h-3.5 w-3.5" /> เชิญสมาชิก
-          </Button>
+          </Button><Button size="sm" onClick={() => setShowCreate(true)}><UserPlus className="h-3.5 w-3.5" /> สร้างบัญชีพนักงาน</Button><Button size="sm" variant="secondary" onClick={generateStaffLoginLink}>สร้างลิงก์ Login พนักงาน</Button><Button asChild size="sm" variant="ghost"><Link href="/dashboard/team/create-user">หน้าเพิ่ม User/Password</Link></Button></div>
         }
       />
+
+      {staffLoginLink && <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm">ลิงก์พนักงานเฉพาะโรงแรม: <span className="font-mono break-all">{staffLoginLink}</span></div>}
 
       {/* Role legend */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
@@ -187,6 +237,25 @@ export default function TeamPage() {
           )}
         </CardContent>
       </Card>
+
+
+      <Dialog open={showCreate} onOpenChange={(o) => !o && setShowCreate(false)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Owner สร้างบัญชีพนักงาน</DialogTitle>
+            <DialogDescription>บัญชีนี้เข้าได้เฉพาะลิงก์ระบบพนักงาน และสร้างโดยเจ้าของเท่านั้น</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateAccount} className="space-y-4">
+            <input type="text" required value={newFullName} onChange={e => setNewFullName(e.target.value)} placeholder="ชื่อพนักงาน" className="w-full px-3 py-2 bg-secondary border-0 rounded-lg text-sm" />
+            <input type="email" required value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} placeholder="staff@hotel.com" className="w-full px-3 py-2 bg-secondary border-0 rounded-lg text-sm" />
+            <input type="password" required minLength={8} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="รหัสผ่านขั้นต่ำ 8 ตัว" className="w-full px-3 py-2 bg-secondary border-0 rounded-lg text-sm" />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>ยกเลิก</Button>
+              <Button type="submit" disabled={creating}>{creating ? 'กำลังสร้าง...' : 'สร้างบัญชี'}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Invite Modal */}
       <Dialog open={showInvite} onOpenChange={(o) => !o && setShowInvite(false)}>

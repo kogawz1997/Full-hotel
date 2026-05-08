@@ -25,53 +25,86 @@ export default function GuestLoginPage() {
 
   const set = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }));
 
+  async function requestWithTimeout(input: RequestInfo | URL, init?: RequestInit, timeoutMs = 15000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      return await fetch(input, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
-    if (mode === 'forgot') {
-      await fetch('/api/guest/auth/forgot-password', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email }),
-      });
-      toast.success('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
-      setMode('login');
-      setLoading(false);
-      return;
-    }
-
-    if (mode === 'register') {
-      if (form.password !== form.confirmPassword) {
-        toast.error('รหัสผ่านไม่ตรงกัน'); setLoading(false); return;
+    try {
+      if (mode === 'forgot') {
+        await requestWithTimeout('/api/guest/auth/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email }),
+        });
+        toast.success('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
+        setMode('login');
+        return;
       }
-      const res = await fetch('/api/guest/auth/register', {
+
+      if (mode === 'register') {
+        if (form.password !== form.confirmPassword) {
+          toast.error('รหัสผ่านไม่ตรงกัน');
+          return;
+        }
+        const res = await requestWithTimeout('/api/guest/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: form.email, password: form.password,
+            firstName: form.firstName, lastName: form.lastName,
+            phone: form.phone, marketingConsent: form.marketingConsent }),
+        });
+        const data = await res.json();
+        if (!res.ok) { toast.error(data.error); return; }
+        toast.success('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยัน');
+        setMode('login');
+        return;
+      }
+
+      const res = await requestWithTimeout('/api/guest/auth/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password,
-          firstName: form.firstName, lastName: form.lastName,
-          phone: form.phone, marketingConsent: form.marketingConsent }),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error); setLoading(false); return; }
-      toast.success('สมัครสมาชิกสำเร็จ! กรุณาตรวจสอบอีเมลเพื่อยืนยัน');
-      setMode('login');
+      if (!res.ok) { toast.error(data.error); return; }
+      router.push(next);
+      router.refresh();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        toast.error('การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง');
+      } else {
+        toast.error('ไม่สามารถเชื่อมต่อระบบได้ กรุณาลองใหม่อีกครั้ง');
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Login
-    const res = await fetch('/api/guest/auth/login', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.email, password: form.password }),
-    });
-    const data = await res.json();
-    if (!res.ok) { toast.error(data.error); setLoading(false); return; }
-    router.push(next);
-    router.refresh();
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF7F2] via-[#F7F4EF] to-[#FFF] p-4 lg:p-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.2fr,0.8fr] items-center">
+        <section className="hidden lg:block">
+          <p className="inline-flex rounded-full bg-[#C66A30]/10 px-3 py-1 text-xs font-medium text-[#A4522A]">Guest Marketplace Experience</p>
+          <h2 className="mt-4 text-5xl font-serif text-[#2A2522] leading-tight">จองง่าย จัดการทริปง่าย
+            <span className="block text-[#C66A30]">ทุกอย่างในที่เดียว</span>
+          </h2>
+          <p className="mt-5 max-w-xl text-[#2A2522]/70">ดูการจอง ชำระเงิน เพิ่มบริการ และรับสิทธิพิเศษแบบที่แพลตฟอร์มท่องเที่ยวสมัยใหม่ควรเป็น</p>
+          <div className="mt-8 grid grid-cols-3 gap-3 text-sm">
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">24/7</p><p className="text-[#2A2522]/60">support</p></div>
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">1-click</p><p className="text-[#2A2522]/60">rebook</p></div>
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">Secure</p><p className="text-[#2A2522]/60">checkout</p></div>
+          </div>
+        </section>
+
+        <div className="w-full max-w-md justify-self-center">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
@@ -146,6 +179,7 @@ export default function GuestLoginPage() {
           คุณเป็นเจ้าของโรงแรม?{' '}
           <Link href="/auth/login" className="text-[#C66A30] hover:underline">เข้าสู่ระบบที่นี่</Link>
         </p>
+      </div>
       </div>
     </div>
   );

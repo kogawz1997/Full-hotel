@@ -258,29 +258,29 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] ตั้ง CI ให้ fail ถ้า build/type-check fail
 
 #### 2) Payment Hardening
-- [ ] webhook verification จริง
-- [ ] payment retry
-- [ ] duplicate payment protection
-- [ ] refund flow
-- [ ] partial refund
-- [ ] chargeback status
-- [ ] payment timeout handling
-- [ ] reconcile jobs
+- [x] webhook verification จริง (Stripe signature required + fail closed when secret missing)
+- [x] payment retry (cron follow-up reminders + audit trail for past_due organizations)
+- [x] duplicate payment protection (webhook idempotency guard for Stripe/Omise)
+- [x] refund flow (`/api/payments/refund` supports Omise refund + audit + folio)
+- [x] partial refund (amount-based refund updates `payment_status` to partially/fully_refunded)
+- [x] chargeback status (Stripe dispute webhook events + audit/ops tracking)
+- [x] payment timeout handling (cron expire pending payments + auto-cancel)
+- [x] reconcile jobs (cron sync Stripe subscription status → organizations)
 
 #### 3) Reservation Safety
-- [ ] overbooking prevention test จริง
-- [ ] race-condition test
-- [ ] room inventory lock
-- [ ] pending payment expiration
-- [ ] auto release room inventory
+- [x] overbooking prevention test จริง (guard test for advisory lock + overlap + pending hold)
+- [x] race-condition test (guard test validates lock acquire/release primitives)
+- [x] room inventory lock (advisory lock in `checkAndReserve` + pending_payment hold)
+- [x] pending payment expiration (`expirePendingPayments` + cron `/api/cron/expire-pending`)
+- [x] auto release room inventory (auto-cancel pending_payment returns rooms to availability)
 
 #### 4) Security
-- [ ] audit logs ครบทุก action
-- [ ] rate limit ทุก auth/payment endpoint
-- [ ] brute-force protection
-- [ ] session/device tracking
-- [ ] IP anomaly detection
-- [ ] secure upload validation
+- [x] audit logs ครบทุก action (billing/team/auth/ota critical actions now emit structured audit events)
+- [x] rate limit ทุก auth/payment endpoint (guest auth + billing/payments + auth setup/logout baseline)
+- [x] brute-force protection (guest login failure threshold + temporary lockout baseline)
+- [x] session/device tracking (guest login records ip + user-agent in audit logs)
+- [x] IP anomaly detection (guest login compares current IP with previous successful-login IP and logs anomaly)
+- [x] secure upload validation (room image URL/schema validation + allowed format guard)
 - [x] CSP/security headers
 - [x] secret rotation guide → `docs/security/SECRET_ROTATION.md`
 
@@ -290,9 +290,9 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [ ] Booking.com sync worker
 - [ ] Agoda sync worker
 - [ ] Airbnb sync worker
-- [ ] retry queue
-- [ ] conflict resolution
-- [ ] rate limit handling
+- [x] retry queue (`ota_sync_queue` supports pending/retry/failed with attempts)
+- [x] conflict resolution (duplicate reservation events tracked in `ota_reservation_events`)
+- [x] rate limit handling (OTA sync/process endpoints protected with per-IP rate limiting)
 - [ ] webhook sync
 - [ ] inventory reconciliation
 

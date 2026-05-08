@@ -543,6 +543,32 @@ Gross Margin                96.6%
 
 ---
 
+
+## 💳 Billing Hardening Status (P0)
+
+- ✅ Stripe webhook signature verification + required `STRIPE_WEBHOOK_SECRET`
+- ✅ Webhook idempotency guard (duplicate event protection)
+- ✅ Chargeback lifecycle tracking (`charge.dispute.created`, `charge.dispute.closed`)
+- ✅ Billing retry follow-up cron: `GET /api/cron/billing-retry`
+- ✅ Billing reconcile cron: `GET /api/cron/billing-reconcile`
+- ✅ Refund & partial refund flow: `POST /api/payments/refund`
+- ✅ Reservation safety primitives: advisory room lock + pending-payment expiry cron
+- ✅ P0 checklist ปิดครบใน baseline ปัจจุบัน (payment, reservation safety, security)
+- 🔐 Security progress: payment refund + payment reconcile endpoints now include dedicated rate limiting guards
+
+> หมายเหตุ: cron endpoints ต้องเรียกด้วย `CRON_SECRET` ผ่าน server-side scheduler เท่านั้น
+
+---
+
+## 🔁 OTA Sync Worker Status (P1 early progress)
+
+- ✅ Queue processor endpoint: `GET/POST /api/ota/process`
+- ✅ Retry queue behavior (`pending` → `processing` → `retry`/`failed`) with attempt caps
+- ✅ Duplicate/conflict handling for reservation events (`ota_reservation_events`)
+- ⏳ Remaining: provider-specific workers (Booking.com/Agoda/Airbnb full sync), webhook normalization, reconciliation depth
+
+---
+
 ## 🤝 Contributing
 
 ดู [CONTRIBUTING.md](CONTRIBUTING.md) สำหรับ guidelines

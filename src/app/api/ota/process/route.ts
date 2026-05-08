@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { readWebhookToken, verifyBearerOrHeaderToken } from '@/lib/security/webhook';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 async function processQueue(request: Request) {
+  const limited = await rateLimit(request, 'ota.sync.process', 30, 60_000);
+  if (limited) return limited;
   const token = readWebhookToken(request);
   if (!verifyBearerOrHeaderToken(token, process.env.CRON_SECRET)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
