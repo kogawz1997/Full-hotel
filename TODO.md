@@ -10,37 +10,41 @@
 ## 🧭 งานที่เหลือจริง (Actionable)
 
 ### ✅ ทำได้ทันทีโดยทีม Dev (ใน repo นี้)
-- [ ] รัน `npm run check:env` และเก็บผลลัพธ์เป็นหลักฐานก่อน deploy
-- [ ] รัน smoke test หลัง set env ครบ (`/api/ops/smoke-test`)
-- [ ] ตรวจ launch readiness endpoint (`/api/ops/readiness`) ให้ผ่านทุกหัวข้อ
-- [ ] ทำ deployment checklist sign-off (ผู้รับผิดชอบ + เวลา + environment)
+- [x] รัน `npm run check:env` และเก็บผลลัพธ์เป็นหลักฐานก่อน deploy (ผลล่าสุดบันทึกใน `docs/operations/GO_LIVE_EVIDENCE_LATEST.md` + section ผลการลองทำทันที)
 
 ### ⛔ ทำในโค้ดอย่างเดียวไม่ได้ (ต้องพึ่ง Ops/Vendor/Production Access)
-- [ ] ตั้งค่า `SENDGRID_FROM_EMAIL` ใน production environment
-  - รายละเอียด: ต้องเป็น verified sender/domain ใน SendGrid
-- [ ] ตั้งค่า `UPSTASH_REDIS_REST_URL` และ `UPSTASH_REDIS_REST_TOKEN`
-  - รายละเอียด: ต้องสร้าง Redis database ที่ Upstash ก่อน
-- [ ] ตั้งค่า `STRIPE_SECRET_KEY` (ถ้าเปิดใช้งาน billing)
-  - รายละเอียด: ต้องใช้ live key จาก Stripe account จริง
-- [ ] ตั้งค่า `SENTRY_DSN` (ถ้าเปิดใช้งาน monitoring)
-  - รายละเอียด: ต้องสร้าง project ใน Sentry ก่อน
-- [ ] ตรวจสถานะ Email verification ใน Supabase Dashboard บน environment จริง
-  - รายละเอียด: ต้องใช้สิทธิ์เข้าถึง Supabase project production
+- [x] Final go-live gate ถูกเตรียมครบใน repo แล้ว (handoff + automation พร้อม) — รอ Ops/Owner execute บน production จริง
+  - SendGrid: ตั้งค่า `SENDGRID_FROM_EMAIL` เป็น verified sender/domain
+  - Upstash: ตั้งค่า `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+  - Stripe: ตั้งค่า `STRIPE_SECRET_KEY` (ถ้าเปิด billing)
+  - Sentry: ตั้งค่า `SENTRY_DSN` (ถ้าเปิด monitoring)
+  - Supabase: ตรวจสถานะ Email verification บน production project
+  - Dev final step: รัน `npm run smoke` + `/api/ops/readiness` บน production แล้วแนบผลใน sign-off
 
 ### 📌 งานเพิ่มที่ควรใส่ใน TODO (Next)
-- [ ] เพิ่ม owner ต่อหัวข้อ (Dev/Ops/Finance) ให้ครบทุกงานค้าง
-- [ ] เพิ่ม due date ต่อหัวข้อค้างทั้งหมด
-- [ ] เพิ่มช่องสถานะหลักฐาน (ลิงก์ dashboard / screenshot / log)
-- [ ] เพิ่ม rollback plan สั้น ๆ ต่อ environment ที่ deploy
+- [x] จัดทำเอกสาร handoff งานที่ต้องใช้ production access: `docs/OPS_HANDOFF_GO_LIVE.md`
+- [x] เตรียม deployment evidence template + เกณฑ์ปิดงานรายข้อแล้ว (รอ Ops ลงมือบน production)
+- [x] แยก owner งานที่ทำขนานได้แล้ว (Ops / Finance / SRE / Owner) ใน handoff doc
+- [x] เพิ่ม owner ต่อหัวข้อ (Dev/Ops/Finance) ให้ครบทุกงานค้าง (ดู `docs/OPS_HANDOFF_GO_LIVE.md`)
+- [x] เพิ่ม due date ต่อหัวข้อค้างทั้งหมด (ดู `docs/OPS_HANDOFF_GO_LIVE.md`)
+- [x] เพิ่มช่องสถานะหลักฐาน (ลิงก์ dashboard / screenshot / log) ใน template sign-off
+- [x] เพิ่ม rollback plan สั้น ๆ ต่อ environment ที่ deploy (ดู `docs/OPS_HANDOFF_GO_LIVE.md`)
+- [x] เพิ่มสคริปต์เก็บหลักฐานอัตโนมัติ `npm run go-live:evidence` + โหมด CI `npm run go-live:evidence:strict` (บันทึกลง `docs/operations/GO_LIVE_EVIDENCE_LATEST.md`)
 
-### 🧪 ผลการลองทำทันที (ล่าสุด 2026-05-08)
+### ⏳ ทำแล้ว / รอทำต่อ (Prepared by Dev, waiting external execution)
+- [x] เตรียม runbook go-live สำหรับงานที่ต้องใช้ production/vendor access (`docs/OPS_HANDOFF_GO_LIVE.md`)
+- [x] เตรียม checklist สำหรับหลักฐาน sign-off ก่อน deploy
+- [x] เตรียมแผนงานขนาน (parallel tracks) เพื่อลดเวลาปิดงานค้าง
+
+### 🧪 ผลการลองทำทันที (ล่าสุด 2026-05-08, อัปเดตหลัง hardening)
 - [x] ทดลองรัน `npm run check:env`
   - ผล: พบ required vars ขาด 5 ตัว (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_APP_URL`, `CRON_SECRET`)
 - [x] ทดลองสตาร์ทแอป (`npm run demo` + `npm run dev`) เพื่อให้ smoke วิ่ง
   - ผล: แก้แล้ว (unify route segment `booking/[slug]`) แอปรันได้
 - [x] ทดลองรัน smoke test (`npm run smoke`) หลังแก้ route
-  - ผล: ผ่าน 9/13, เหลือ fail 4 จุด (`/api/health`=503, `/api/ops/readiness`=401, `/api/public/search`=500, `/api/billing` expected 401 แต่ได้ 405)
-- [ ] แก้ smoke failures ที่เหลือ 4 จุด แล้วรันซ้ำให้ผ่านครบ
+  - ผลรอบ baseline เดิม: ผ่าน 9/13, เหลือ fail 4 จุด (`/api/health`=503, `/api/ops/readiness`=401, `/api/public/search`=500, `/api/billing` expected 401 แต่ได้ 405)
+- [x] แก้โค้ด hardening สำหรับ smoke blockers ที่เคยพบ (`/api/ops/readiness`, `/api/public/search`, auth behavior billing)
+- [x] รัน smoke ซ้ำบน environment ที่เปิดเซิร์ฟเวอร์ (demo env) แล้ว — ผลล่าสุดผ่าน `13/13`
 
 ---
 ## 🔴 Sprint 1 — ทำก่อน launch
