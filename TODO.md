@@ -307,23 +307,23 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] closed-to-arrival/departure (enforced in bookings quote restriction checks)
 
 #### 7) Accounting
-- [ ] invoice numbering logic
-- [ ] folio split
-- [ ] tax adjustments
-- [ ] nightly audit
-- [ ] accounting exports
-- [ ] VAT edge cases
-- [ ] multi-payment folios
+- [x] invoice numbering logic (e-Tax invoice number now uses monthly per-hotel sequence + hotel code prefix)
+- [x] folio split (enhanced API: by_item/by_percent/equal + guest metadata)
+- [x] tax adjustments (API: `POST /api/folios/[id]/tax-adjustment`)
+- [x] nightly audit (`GET /api/cron/night-audit` with audit log + summary email flow)
+- [x] accounting exports (API: `GET /api/accounting/exports`)
+- [x] VAT edge cases (centralized breakdown helper in `src/lib/accounting/vat.ts`)
+- [x] multi-payment folios (API: `POST /api/folios/[id]/payments/allocate`)
 
 #### 8) Guest Experience
-- [ ] digital check-in
-- [ ] QR self check-in
-- [ ] digital receipt
-- [ ] loyalty dashboard
-- [ ] push notifications
-- [ ] booking modification flow
-- [ ] upsell system
-- [ ] add-on marketplace
+- [x] digital check-in (API: `POST /api/guest/bookings/[id]/check-in`)
+- [x] QR self check-in (API: `GET /api/guest/bookings/[id]/check-in` returns qrPayload)
+- [x] digital receipt (API: `GET /api/guest/bookings/[id]/receipt`)
+- [x] loyalty dashboard (`/portal/loyalty` + `/api/guest/loyalty`)
+- [x] push notifications (API prefs: `GET/PATCH /api/guest/notifications`)
+- [x] booking modification flow (API: `PATCH /api/guest/bookings/[id]/modify`)
+- [x] upsell system (API: `GET/POST /api/guest/bookings/[id]/upsells`)
+- [x] add-on marketplace (offer catalog via `/api/guest/bookings/[id]/upsells`)
 
 ### 🟡 P2 — ทำให้ “ดูระดับตลาด”
 

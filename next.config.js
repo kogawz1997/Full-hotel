@@ -47,6 +47,18 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
+  eslint: {
+    // Keep CI/dev linting via explicit `npm run lint`, but avoid warning noise in `next build`.
+    ignoreDuringBuilds: true,
+  },
+  webpack: (config) => {
+    config.cache = false;
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /@opentelemetry\/instrumentation/, message: /Critical dependency: the request of a dependency is an expression/ },
+    ];
+    return config;
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
