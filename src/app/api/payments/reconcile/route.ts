@@ -7,8 +7,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
 import { format, subDays } from 'date-fns';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimit(request, 'payments.reconcile', 10, 60_000);
+  if (limited) return limited;
+
   const { hotelId, days = 7 } = await request.json();
 
   const ctx = await requireHotelAccess(hotelId, ['owner', 'admin']);

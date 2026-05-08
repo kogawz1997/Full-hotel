@@ -89,8 +89,22 @@ export default function GuestLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF7F2] via-[#F7F4EF] to-[#FFF] p-4 lg:p-8">
+      <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[1.2fr,0.8fr] items-center">
+        <section className="hidden lg:block">
+          <p className="inline-flex rounded-full bg-[#C66A30]/10 px-3 py-1 text-xs font-medium text-[#A4522A]">Guest Marketplace Experience</p>
+          <h2 className="mt-4 text-5xl font-serif text-[#2A2522] leading-tight">จองง่าย จัดการทริปง่าย
+            <span className="block text-[#C66A30]">ทุกอย่างในที่เดียว</span>
+          </h2>
+          <p className="mt-5 max-w-xl text-[#2A2522]/70">ดูการจอง ชำระเงิน เพิ่มบริการ และรับสิทธิพิเศษแบบที่แพลตฟอร์มท่องเที่ยวสมัยใหม่ควรเป็น</p>
+          <div className="mt-8 grid grid-cols-3 gap-3 text-sm">
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">24/7</p><p className="text-[#2A2522]/60">support</p></div>
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">1-click</p><p className="text-[#2A2522]/60">rebook</p></div>
+            <div className="rounded-2xl border border-black/5 bg-white p-4"><p className="text-2xl font-bold text-[#2A2522]">Secure</p><p className="text-[#2A2522]/60">checkout</p></div>
+          </div>
+        </section>
+
+        <div className="w-full max-w-md justify-self-center">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
@@ -165,6 +179,7 @@ export default function GuestLoginPage() {
           คุณเป็นเจ้าของโรงแรม?{' '}
           <Link href="/auth/login" className="text-[#C66A30] hover:underline">เข้าสู่ระบบที่นี่</Link>
         </p>
+      </div>
       </div>
     </div>
   );

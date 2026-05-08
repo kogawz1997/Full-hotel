@@ -26,5 +26,21 @@ export async function POST(request: Request) {
     errors: expected ? null : { reason: 'AGODA_WEBHOOK_TOKEN missing or YCS parser not connected', payloadPreview: payload ? Object.keys(payload) : [] },
   });
 
+
+
+  const hotelId = payload?.hotel_id || payload?.property_id || payload?.hotelId;
+  if (expected && hotelId) {
+    await supabase.from('ota_sync_queue').insert({
+      hotel_id: String(hotelId),
+      connection_id: null,
+      provider: 'agoda',
+      direction: 'pull',
+      type: 'reservations',
+      status: 'pending',
+      payload: payload || {},
+      created_by: null,
+    });
+  }
+
   return NextResponse.json({ status: expected ? 'received' : 'not_configured', mode: 'staged' }, { status: expected ? 202 : 501 });
 }

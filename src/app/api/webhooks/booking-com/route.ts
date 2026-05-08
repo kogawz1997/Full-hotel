@@ -5,6 +5,8 @@ import { rateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(request: Request) {
   const body = await request.text();
+  let payload: any = null;
+  try { payload = body ? JSON.parse(body) : null; } catch {}
   const limited = await rateLimit(request, 'webhooks.booking_com_webhook_token', 120, 60_000);
   if (limited) return limited;
 
@@ -22,6 +24,22 @@ export async function POST(request: Request) {
     records_processed: 0,
     errors: expected ? null : { reason: 'BOOKING_COM_WEBHOOK_TOKEN missing or partner parser not connected', sampleBytes: body.length },
   });
+
+
+
+  const hotelId = payload?.hotel_id || payload?.property_id || payload?.hotelId;
+  if (expected && hotelId) {
+    await supabase.from('ota_sync_queue').insert({
+      hotel_id: String(hotelId),
+      connection_id: null,
+      provider: 'booking_com',
+      direction: 'pull',
+      type: 'reservations',
+      status: 'pending',
+      payload: payload || { rawSize: body.length },
+      created_by: null,
+    });
+  }
 
   return new Response('<?xml version="1.0"?><response status="received" mode="staged"/>', {
     headers: { 'Content-Type': 'application/xml' },

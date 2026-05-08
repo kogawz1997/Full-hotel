@@ -7,7 +7,8 @@
  *   URL: https://yourdomain.com/api/billing/webhook
  *   Events: checkout.session.completed, customer.subscription.updated,
  *           customer.subscription.deleted, invoice.payment_failed,
- *           invoice.payment_succeeded
+ *           invoice.payment_succeeded, charge.dispute.created,
+ *           charge.dispute.closed
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
@@ -15,6 +16,10 @@ import { verifyStripeSignature } from '@/lib/billing/stripe';
 import { sendOpsAlert } from '@/lib/ops/alerts';
 
 export async function POST(request: NextRequest) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Stripe webhook is not configured' }, { status: 503 });
+  }
+
   const rawBody = await request.text();
   const signature = request.headers.get('stripe-signature');
 
@@ -34,7 +39,7 @@ export async function POST(request: NextRequest) {
   const eventId = event?.id;
   if (eventId) {
     const { data: dup } = await admin.from('audit_logs')
-      .select('id').eq('action', 'webhook.stripe').eq('entity_id', eventId).single();
+      .select('id').eq('action', 'webhook.stripe').eq('entity_id', eventId).maybeSingle();
     if (dup) return NextResponse.json({ received: true, duplicate: true });
     await admin.from('audit_logs').insert({
       action: 'webhook.stripe', entity_type: 'billing', entity_id: eventId,
@@ -91,6 +96,7 @@ export async function POST(request: NextRequest) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object;
         const custId  = invoice.customer;
+        const retryAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         await admin.from('organizations').update({
           subscription_status: 'past_due',
         }).eq('stripe_customer_id', custId);
@@ -98,16 +104,22 @@ export async function POST(request: NextRequest) {
           level: 'critical',
           title: 'Stripe invoice payment failed',
           message: `Subscription invoice payment failed for customer ${custId}.`,
-          context: { customer_id: custId, invoice_id: invoice.id, amount_due: invoice.amount_due },
+          context: { customer_id: custId, invoice_id: invoice.id, amount_due: invoice.amount_due, retry_at: retryAt },
         });
         await admin.from('operational_events').insert({
           event_type: 'billing.invoice.payment_failed',
           severity: 'critical',
           title: 'Stripe invoice payment failed',
-          details: { customer_id: custId, invoice_id: invoice.id, amount_due: invoice.amount_due },
+          details: { customer_id: custId, invoice_id: invoice.id, amount_due: invoice.amount_due, retry_at: retryAt, retry_strategy: 'manual_follow_up_or_stripe_smart_retries' },
           source: 'stripe-webhook',
         });
-        console.warn(`[Stripe] Payment failed: customer=${custId}`);
+        await admin.from('audit_logs').insert({
+          action: 'billing.retry.suggested',
+          entity_type: 'billing',
+          entity_id: String(invoice.id || custId),
+          changes: { customer_id: custId, retry_at: retryAt },
+        });
+        console.warn(`[Stripe] Payment failed: customer=${custId}; retry_at=${retryAt}`);
         break;
       }
 
@@ -117,6 +129,44 @@ export async function POST(request: NextRequest) {
         await admin.from('organizations').update({
           subscription_status: 'active',
         }).eq('stripe_customer_id', custId);
+        break;
+      }
+
+      case 'charge.dispute.created': {
+        const dispute = event.data.object;
+        const chargeId = dispute.charge;
+        await admin.from('operational_events').insert({
+          event_type: 'billing.chargeback.created',
+          severity: 'critical',
+          title: 'Stripe charge dispute created',
+          details: { dispute_id: dispute.id, charge_id: chargeId, amount: dispute.amount, reason: dispute.reason, status: dispute.status },
+          source: 'stripe-webhook',
+        });
+        await admin.from('audit_logs').insert({
+          action: 'billing.chargeback.opened',
+          entity_type: 'billing',
+          entity_id: String(dispute.id || chargeId),
+          changes: { charge_id: chargeId, status: dispute.status, reason: dispute.reason },
+        });
+        break;
+      }
+
+      case 'charge.dispute.closed': {
+        const dispute = event.data.object;
+        const chargeId = dispute.charge;
+        await admin.from('operational_events').insert({
+          event_type: 'billing.chargeback.closed',
+          severity: dispute.status === 'won' ? 'info' : 'warning',
+          title: 'Stripe charge dispute closed',
+          details: { dispute_id: dispute.id, charge_id: chargeId, amount: dispute.amount, reason: dispute.reason, status: dispute.status },
+          source: 'stripe-webhook',
+        });
+        await admin.from('audit_logs').insert({
+          action: 'billing.chargeback.closed',
+          entity_type: 'billing',
+          entity_id: String(dispute.id || chargeId),
+          changes: { charge_id: chargeId, status: dispute.status, reason: dispute.reason },
+        });
         break;
       }
 
