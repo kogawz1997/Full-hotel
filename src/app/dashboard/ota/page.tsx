@@ -1,3 +1,5 @@
+import { WifiOff, RefreshCw } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { requireHotelAccess } from '@/lib/auth/guards';
 
 export default async function OtaPage() {
@@ -31,7 +33,18 @@ export default async function OtaPage() {
             <thead className="text-left text-muted-foreground"><tr><th className="py-2">Provider</th><th>Property ID</th><th>Status</th><th>Rates</th><th>Inventory</th><th>Reservations</th></tr></thead>
             <tbody>
               {(connections || []).map((c: any) => <tr key={c.id} className="border-t"><td className="py-2">{c.provider}</td><td>{c.external_property_id}</td><td>{c.status}</td><td>{c.sync_rates ? 'On' : 'Off'}</td><td>{c.sync_inventory ? 'On' : 'Off'}</td><td>{c.sync_reservations ? 'On' : 'Off'}</td></tr>)}
-              {!connections?.length && <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">ยังไม่มี OTA connection</td></tr>}
+              {!connections?.length && (
+                <tr>
+                  <td colSpan={6}>
+                    <EmptyState
+                      icon={WifiOff}
+                      title="ยังไม่มี OTA connection"
+                      description="เริ่มต้นด้วยการเชื่อมต่อ provider เพื่อให้ระบบซิงก์ราคา สต็อก และการจองได้อัตโนมัติ"
+                      className="py-10"
+                    />
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -40,7 +53,14 @@ export default async function OtaPage() {
         <h2 className="mb-3 font-semibold">Sync Logs</h2>
         <div className="space-y-2">
           {(logs || []).map((log: any) => <div key={log.id} className="flex items-center justify-between rounded-lg border p-3 text-sm"><span>{log.provider} · {log.direction} · {log.status}</span><span className="text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span></div>)}
-          {!logs?.length && <p className="text-sm text-muted-foreground">ยังไม่มี sync log</p>}
+          {!logs?.length && (
+            <EmptyState
+              icon={RefreshCw}
+              title="ยังไม่มี sync log"
+              description="เมื่อมีการซิงก์กับ OTA ระบบจะแสดงสถานะล่าสุดที่นี่"
+              className="py-10"
+            />
+          )}
         </div>
       </div>
     </div>
