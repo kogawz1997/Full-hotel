@@ -4,6 +4,8 @@ import { getPaymentAdapter } from '@/lib/payments';
 import { parseJson } from '@/lib/http/validation';
 import { assertReservationAccess } from '@/lib/auth/guards';
 import { rateLimit } from '@/lib/security/rate-limit';
+import { getRequestId, handleApiError } from '@/lib/http/api-error';
+import { validateCsrfOrigin } from '@/lib/security/csrf';
 
 const schema = z.object({
   reservationId: z.string().uuid(),
@@ -15,7 +17,12 @@ const schema = z.object({
 });
 
 export async function POST(request: Request) {
+  const requestId = getRequestId(request);
+  let tenantId: string | null = null;
   try {
+    const csrf = validateCsrfOrigin(request);
+    if (csrf.ok === false) return NextResponse.json({ error: `CSRF validation failed: ${csrf.reason}` }, { status: 403 });
+
     const limited = await rateLimit(request, 'payments.charge', 20, 60_000);
     if (limited) return limited;
 
@@ -46,6 +53,7 @@ export async function POST(request: Request) {
 
     const supabase = ctx.supabase;
     const reservation = ctx.reservation;
+    tenantId = reservation.hotel_id;
 
     const balance = Math.max(
       0,
@@ -126,11 +134,9 @@ export async function POST(request: Request) {
       payment,
       qrCode: result.qrCode,
       paymentUrl: result.paymentUrl,
+      requestId,
     });
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-
-    return NextResponse.json({ error: message }, { status: 500 });
+    return handleApiError(error, { request, tenantId });
   }
 }

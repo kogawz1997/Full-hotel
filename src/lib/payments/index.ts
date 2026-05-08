@@ -38,6 +38,8 @@ export class OmiseAdapter implements PaymentAdapter {
   name = 'omise';
   private secretKey: string;
   private baseUrl = 'https://api.omise.co';
+  private requestTimeoutMs = 10_000;
+  private maxRetries = 2;
 
   constructor(secretKey: string) {
     this.secretKey = secretKey;
@@ -46,19 +48,38 @@ export class OmiseAdapter implements PaymentAdapter {
   private async request(path: string, method = 'GET', body?: any) {
     if (!this.secretKey) throw new Error('Omise is not configured');
     const auth = Buffer.from(`${this.secretKey}:`).toString('base64');
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method,
-      headers: {
-        Authorization: `Basic ${auth}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: body ? new URLSearchParams(body).toString() : undefined,
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data?.message || data?.code || `Omise request failed (${response.status})`);
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), this.requestTimeoutMs);
+      try {
+        const response = await fetch(`${this.baseUrl}${path}`, {
+          method,
+          headers: {
+            Authorization: `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: body ? new URLSearchParams(body).toString() : undefined,
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.message || data?.code || `Omise request failed (${response.status})`);
+        }
+        return data;
+      } catch (error) {
+        lastError = error;
+        const isAbort = error instanceof Error && error.name === 'AbortError';
+        const shouldRetry = attempt < this.maxRetries && (isAbort || error instanceof TypeError);
+        if (!shouldRetry) break;
+        await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
+      } finally {
+        clearTimeout(timer);
+      }
     }
-    return data;
+
+    throw lastError instanceof Error ? lastError : new Error('Omise request failed');
   }
 
   async charge(req: PaymentRequest): Promise<PaymentResult> {
