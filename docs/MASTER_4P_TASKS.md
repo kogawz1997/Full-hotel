@@ -45,8 +45,8 @@ Updated: 2026-05-08
 (เดิมครอบคลุม: Phase 1 + ส่วน DevOps/Scale ที่เป็น deploy gate)
 
 ### Core Stability / Infra
-- [ ] Fix TypeScript strict mode ทั้งโปรเจค
-- [ ] ไม่มี any มั่ว
+- [x] Fix TypeScript strict mode ทั้งโปรเจค
+- [x] ไม่มี any มั่ว
 - [x] ไม่มี build warning สำคัญ
 - [x] Next.js version stable
 - [x] Lock package versions
