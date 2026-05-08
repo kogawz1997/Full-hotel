@@ -7,6 +7,8 @@ import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
+import { CalendarClock } from 'lucide-react';
 
 type Reservation = { id: string; reservation_code: string; guests?: any; rooms?: any };
 type Service = { id: string; name: string; price: number; duration_min: number };
@@ -97,7 +99,7 @@ export function SpaBookingClient({ reservations }: { reservations: Reservation[]
       <Card>
         <CardHeader><CardTitle>Upcoming spa bookings</CardTitle><CardDescription>ตาราง 14 วันถัดไป</CardDescription></CardHeader>
         <CardContent className="space-y-3">
-          {bookings.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">ยังไม่มี booking</p> : null}
+          {bookings.length === 0 ? <EmptyState icon={CalendarClock} title="ยังไม่มี booking" description="สร้างการจองสปาใหม่ แล้วระบบจะแสดงคิวนัดหมายที่นี่" className="py-10" /> : null}
           {bookings.map(b => (
             <div key={b.id} className="rounded-xl border p-4 flex flex-wrap items-center justify-between gap-3">
               <div>

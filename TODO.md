@@ -329,7 +329,7 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 
 #### 9) UX Polish
 - [ ] skeleton loading ทุกหน้า
-- [ ] proper empty states
+- [x] proper empty states (OTA dashboard: connections/logs now use consistent EmptyState UX)
 - [ ] smooth transitions
 - [ ] better mobile gestures
 - [ ] sticky mobile actions

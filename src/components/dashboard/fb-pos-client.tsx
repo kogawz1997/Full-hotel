@@ -7,6 +7,8 @@ import { Select } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
+import { UtensilsCrossed } from 'lucide-react';
 
 type MenuItem = { id: string; name: string; price: number; outlet_id: string };
 type Reservation = { id: string; reservation_code: string; guests?: any; rooms?: any };
@@ -133,7 +135,7 @@ export function FBPosClient({ reservations }: { reservations: Reservation[] }) {
           <CardDescription>ลำดับงานจากเปิดบิล → ทำอาหาร → เสิร์ฟ → charge เข้า folio</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {orders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">ยังไม่มี order</p> : null}
+          {orders.length === 0 ? <EmptyState icon={UtensilsCrossed} title="ยังไม่มี order" description="เมื่อสร้าง room service order ใหม่ รายการคิวครัวจะปรากฏที่นี่" className="py-10" /> : null}
           {orders.map(order => (
             <div key={order.id} className="rounded-xl border p-4 space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-3">

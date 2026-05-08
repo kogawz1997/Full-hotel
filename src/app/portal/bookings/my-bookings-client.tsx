@@ -8,6 +8,7 @@ import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { formatCurrency, cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Calendar, Bed, MapPin, Clock, Star, Download, MessageSquare,
   X, ChevronRight, User, LogOut, Heart, Settings, QrCode,
@@ -63,7 +64,20 @@ export function MyBookingsClient({ guest }: { guest: any }) {
   const past      = bookings.filter(b => ['checked_out'].includes(b.status) || (b.status !== 'cancelled' && isBefore(parseISO(b.check_out), now)));
   const cancelled = bookings.filter(b => ['cancelled','no_show'].includes(b.status));
   const tabs = { upcoming, past, cancelled };
+  const tabOrder: Array<'upcoming' | 'past' | 'cancelled'> = ['upcoming', 'past', 'cancelled'];
   const current = tabs[activeTab];
+
+  function onTabsKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const currentIndex = tabOrder.indexOf(activeTab);
+    if (event.key === 'Home') return setActiveTab(tabOrder[0]);
+    if (event.key === 'End') return setActiveTab(tabOrder[tabOrder.length - 1]);
+    const nextIndex = event.key === 'ArrowRight'
+      ? (currentIndex + 1) % tabOrder.length
+      : (currentIndex - 1 + tabOrder.length) % tabOrder.length;
+    setActiveTab(tabOrder[nextIndex]);
+  }
 
   async function doCancel() {
     if (!selected) return;
@@ -162,13 +176,13 @@ export function MyBookingsClient({ guest }: { guest: any }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-xl p-1 border border-black/5 mb-6">
+        <div role="tablist" aria-label="ตัวกรองสถานะการจอง" onKeyDown={onTabsKeyDown} className="flex gap-1 bg-white rounded-xl p-1 border border-black/5 mb-6">
           {[
             { key: 'upcoming', label: `ที่กำลังจะมา (${upcoming.length})` },
             { key: 'past',     label: `ผ่านมาแล้ว (${past.length})` },
             { key: 'cancelled', label: `ยกเลิก (${cancelled.length})` },
           ].map(t => (
-            <button key={t.key} onClick={() => setActiveTab(t.key as any)}
+            <button key={t.key} role="tab" aria-selected={activeTab === t.key} aria-controls={`bookings-panel-${t.key}`} id={`bookings-tab-${t.key}`} tabIndex={activeTab === t.key ? 0 : -1} onClick={() => setActiveTab(t.key as any)}
               className={cn('flex-1 py-2 text-sm rounded-lg font-medium transition-all',
                 activeTab === t.key ? 'bg-[#2A2522] text-white' : 'text-[#2A2522]/50 hover:text-[#2A2522]')}>
               {t.label}
@@ -180,12 +194,11 @@ export function MyBookingsClient({ guest }: { guest: any }) {
         {loading ? (
           <div className="space-y-4">{[1,2].map(i => <div key={i} className="h-40 bg-white rounded-2xl animate-pulse" />)}</div>
         ) : current.length === 0 ? (
-          <div className="text-center py-20 text-[#2A2522]/40">
-            <Calendar className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="font-medium">ไม่มีการจองในหมวดนี้</p>
+          <div role="tabpanel" id={`bookings-panel-${activeTab}`} aria-labelledby={`bookings-tab-${activeTab}`}>
+            <EmptyState icon={Calendar} title="ไม่มีการจองในหมวดนี้" description="เมื่อมีการจองใหม่ รายการจะถูกแสดงตามสถานะให้อัตโนมัติ" className="py-20 text-[#2A2522]/60" />
           </div>
         ) : (
-          <div className="space-y-4">
+          <div role="tabpanel" id={`bookings-panel-${activeTab}`} aria-labelledby={`bookings-tab-${activeTab}`} className="space-y-4">
             {current.map(b => {
               const hotel = b.hotels || {};
               const rt = b.room_types || {};
