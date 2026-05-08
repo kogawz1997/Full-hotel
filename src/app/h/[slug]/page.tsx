@@ -25,7 +25,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: `${h.name}`,
       description: h.description || `ที่พักใน ${h.city}`,
+      url: `/h/${slug}`,
       images: h.hero_image_url ? [{ url: h.hero_image_url, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${h.name} — จองห้องพักออนไลน์`,
+      description: h.description || `ที่พักใน ${h.city}`,
+      images: h.hero_image_url ? [h.hero_image_url] : [],
     },
   };
 }
@@ -93,11 +100,25 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
     priceRange: minRate ? `THB ${Math.round(minRate).toLocaleString()}+` : undefined,
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'หน้าแรก', item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/` },
+      { '@type': 'ListItem', position: 2, name: 'โรงแรม', item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/search` },
+      { '@type': 'ListItem', position: 3, name: hotel.name, item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/h/${slug}` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       {/* Sticky nav */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
