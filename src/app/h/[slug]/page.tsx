@@ -8,6 +8,21 @@ import { GuestChatWidget } from '@/components/booking/guest-chat-widget';
 import { WishlistButton } from '@/components/ui/wishlist-button';
 import { HotelGallery } from '@/components/booking/hotel-gallery';
 import type { Metadata } from 'next';
+type GalleryItem = { image_url: string; alt_text?: string | null; display_order: number };
+type Review = {
+  id: string;
+  rating: number;
+  rating_clean?: number | null;
+  rating_service?: number | null;
+  rating_location?: number | null;
+  rating_value?: number | null;
+  reviewer_name?: string | null;
+  verified_stay?: boolean | null;
+  title?: string | null;
+  comment?: string | null;
+  reply_text?: string | null;
+};
+type RoomTypeLite = { base_rate?: number | null };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -25,7 +40,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title: `${h.name}`,
       description: h.description || `ที่พักใน ${h.city}`,
+      url: `/h/${slug}`,
       images: h.hero_image_url ? [{ url: h.hero_image_url, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${h.name} — จองห้องพักออนไลน์`,
+      description: h.description || `ที่พักใน ${h.city}`,
+      images: h.hero_image_url ? [h.hero_image_url] : [],
     },
   };
 }
@@ -56,17 +78,18 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
     .order('created_at', { ascending: false })
     .limit(8);
 
-  const gallery = (hotel.hotel_gallery || []).sort((a: any, b: any) => a.display_order - b.display_order);
-  const avgRating = reviews?.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
+  const typedReviews = (reviews || []) as Review[];
+  const gallery = ((hotel.hotel_gallery || []) as GalleryItem[]).sort((a, b) => a.display_order - b.display_order);
+  const avgRating = typedReviews.length ? typedReviews.reduce((s, r) => s + r.rating, 0) / typedReviews.length : null;
 
-  const ratingBreakdown = reviews?.length ? {
-    clean:    reviews.filter(r => r.rating_clean).reduce((s, r) => s + (r.rating_clean || 0), 0) / reviews.filter(r => r.rating_clean).length || 0,
-    service:  reviews.filter(r => r.rating_service).reduce((s, r) => s + (r.rating_service || 0), 0) / reviews.filter(r => r.rating_service).length || 0,
-    location: reviews.filter(r => r.rating_location).reduce((s, r) => s + (r.rating_location || 0), 0) / reviews.filter(r => r.rating_location).length || 0,
-    value:    reviews.filter(r => r.rating_value).reduce((s, r) => s + (r.rating_value || 0), 0) / reviews.filter(r => r.rating_value).length || 0,
+  const ratingBreakdown = typedReviews.length ? {
+    clean:    typedReviews.filter(r => r.rating_clean).reduce((s, r) => s + (r.rating_clean || 0), 0) / typedReviews.filter(r => r.rating_clean).length || 0,
+    service:  typedReviews.filter(r => r.rating_service).reduce((s, r) => s + (r.rating_service || 0), 0) / typedReviews.filter(r => r.rating_service).length || 0,
+    location: typedReviews.filter(r => r.rating_location).reduce((s, r) => s + (r.rating_location || 0), 0) / typedReviews.filter(r => r.rating_location).length || 0,
+    value:    typedReviews.filter(r => r.rating_value).reduce((s, r) => s + (r.rating_value || 0), 0) / typedReviews.filter(r => r.rating_value).length || 0,
   } : null;
 
-  const minRate = roomTypes?.length ? Math.min(...roomTypes.map((r: any) => Number(r.base_rate))) : 0;
+  const minRate = roomTypes?.length ? Math.min(...(roomTypes as RoomTypeLite[]).map((r) => Number(r.base_rate))) : 0;
   const hotelJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Hotel',
@@ -93,11 +116,25 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
     priceRange: minRate ? `THB ${Math.round(minRate).toLocaleString()}+` : undefined,
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'หน้าแรก', item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/` },
+      { '@type': 'ListItem', position: 2, name: 'โรงแรม', item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/search` },
+      { '@type': 'ListItem', position: 3, name: hotel.name, item: `${process.env.NEXT_PUBLIC_APP_URL || ''}/h/${slug}` },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       {/* Sticky nav */}
       <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-black/5">
@@ -300,7 +337,7 @@ export default async function HotelLandingPage({ params }: { params: Promise<{ s
                 )}
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  {reviews.map(r => (
+                  {typedReviews.map(r => (
                     <div key={r.id} className="p-4 border border-black/8 rounded-2xl">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
