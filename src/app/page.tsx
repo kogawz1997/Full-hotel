@@ -96,8 +96,28 @@ const TESTIMONIALS = [
 ];
 
 export default function HomePage() {
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Maitri',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://maitri.app',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: `${process.env.NEXT_PUBLIC_APP_URL || 'https://maitri.app'}/search?city={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
+  const orgSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Maitri',
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://maitri.app',
+    sameAs: [],
+  };
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#2A2522]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }} />
 
       {/* ─── Navigation ───────────────────────────────────────────────────── */}
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/10 bg-[#2A2522]/80 backdrop-blur-xl">
