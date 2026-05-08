@@ -7,6 +7,8 @@ import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { rateLimit } from '@/lib/security/rate-limit';
+import { getRequestId, handleApiError } from '@/lib/http/api-error';
+import { validateCsrfOrigin } from '@/lib/security/csrf';
 
 const RefundSchema = z.object({
   reservationId: z.string().uuid(),
@@ -15,22 +17,30 @@ const RefundSchema = z.object({
   reason:        z.enum(['guest_request', 'hotel_error', 'overbooking', 'force_majeure', 'other']),
   notes:         z.string().max(500).optional(),
 });
+type OmiseRefundResponse = { id?: string; message?: string };
 
 export async function POST(request: NextRequest) {
-  const limited = await rateLimit(request, 'payments.refund', 20, 60_000);
-  if (limited) return limited;
+  const requestId = getRequestId(request);
+  let tenantId: string | null = null;
+  try {
+    const csrf = validateCsrfOrigin(request);
+    if (csrf.ok === false) return NextResponse.json({ error: `CSRF validation failed: ${csrf.reason}` }, { status: 403 });
 
-  const raw = await request.json();
-  const result = RefundSchema.safeParse(raw);
-  if (!result.success) {
-    return NextResponse.json({ error: 'Validation failed', details: result.error.errors }, { status: 400 });
-  }
-  const { reservationId, hotelId, amount, reason, notes } = result.data;
+    const limited = await rateLimit(request, 'payments.refund', 20, 60_000);
+    if (limited) return limited;
 
-  const ctx = await requireHotelAccess(hotelId, ['owner', 'admin', 'manager']);
-  if (ctx.error) return ctx.error;
+    const raw = await request.json();
+    const result = RefundSchema.safeParse(raw);
+    if (!result.success) {
+      return NextResponse.json({ error: 'Validation failed', details: result.error.errors }, { status: 400 });
+    }
+    const { reservationId, hotelId, amount, reason, notes } = result.data;
+    tenantId = hotelId;
 
-  const admin = createAdminClient();
+    const ctx = await requireHotelAccess(hotelId, ['owner', 'admin', 'manager']);
+    if (ctx.error) return ctx.error;
+
+    const admin = createAdminClient();
 
   // Get reservation + payment info
   const { data: reservation } = await admin
@@ -53,7 +63,7 @@ export async function POST(request: NextRequest) {
       { status: 503 }
     );
   }
-  let refundResult: any;
+  let refundResult: OmiseRefundResponse = {};
   try {
     const omiseRes = await fetch(
       `https://api.omise.co/charges/${reservation.omise_charge_id}/refunds`,
@@ -70,8 +80,9 @@ export async function POST(request: NextRequest) {
     if (!omiseRes.ok) {
       return NextResponse.json({ error: refundResult.message || 'Omise refund failed' }, { status: 400 });
     }
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Refund request failed';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   // Update reservation
@@ -102,11 +113,15 @@ export async function POST(request: NextRequest) {
     changes: { amount, reason, notes, refund_id: refundResult.id, status: newStatus },
   });
 
-  return NextResponse.json({
-    success: true,
-    refundId: refundResult.id,
-    refundedAmount: amount,
-    newPaidAmount,
-    paymentStatus: newStatus,
-  });
+    return NextResponse.json({
+      success: true,
+      refundId: refundResult.id,
+      refundedAmount: amount,
+      newPaidAmount,
+      paymentStatus: newStatus,
+      requestId,
+    });
+  } catch (error) {
+    return handleApiError(error, { request, tenantId });
+  }
 }

@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'Maitri' }],
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'Maitri PMS', statusBarStyle: 'default' },
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     title: 'Maitri — Hotel Operating System',
     description: 'AI-first property management for Thai hospitality.',

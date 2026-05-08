@@ -8,26 +8,35 @@ import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { RATE_LIMITS } from '@/lib/validation';
 import { z } from 'zod';
+import { getRequestId, handleApiError } from '@/lib/http/api-error';
+import { validateCsrfOrigin } from '@/lib/security/csrf';
 
 const DepositSchema = z.object({
   reservationId: z.string().uuid(),
   token:         z.string().min(1),      // Omise card token
   depositPercent: z.number().min(10).max(100).default(30),
 });
+type OmiseChargeResponse = { id?: string; status?: string; failure_message?: string };
 
 export async function POST(request: NextRequest) {
-  const rl = await rateLimit(request, 'payment', RATE_LIMITS.payment.limit, RATE_LIMITS.payment.windowMs);
-  if (rl) return rl;
+  const requestId = getRequestId(request);
+  let tenantId: string | null = null;
+  try {
+    const csrf = validateCsrfOrigin(request);
+    if (csrf.ok === false) return NextResponse.json({ error: `CSRF validation failed: ${csrf.reason}` }, { status: 403 });
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+    const rl = await rateLimit(request, 'payment', RATE_LIMITS.payment.limit, RATE_LIMITS.payment.windowMs);
+    if (rl) return rl;
 
-  const raw = await request.json();
-  const result = DepositSchema.safeParse(raw);
-  if (!result.success) return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
-  const { reservationId, token, depositPercent } = result.data;
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-  const admin = createAdminClient();
+    const raw = await request.json();
+    const result = DepositSchema.safeParse(raw);
+    if (!result.success) return NextResponse.json({ error: 'Validation failed' }, { status: 400 });
+    const { reservationId, token, depositPercent } = result.data;
+
+    const admin = createAdminClient();
   const { data: res } = await admin
     .from('reservations')
     .select('*, hotels(name, omise_public_key)')
@@ -35,6 +44,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (!res) return NextResponse.json({ error: 'Reservation not found' }, { status: 404 });
+  tenantId = res.hotel_id;
   if (!['pending_payment', 'confirmed'].includes(res.status)) {
     return NextResponse.json({ error: `Cannot charge reservation in status: ${res.status}` }, { status: 400 });
   }
@@ -62,7 +72,7 @@ export async function POST(request: NextRequest) {
       metadata: { reservation_id: reservationId, type: 'deposit' },
     }),
   });
-  const chargeResult: any = await omiseRes.json();
+  const chargeResult = (await omiseRes.json()) as OmiseChargeResponse;
   if (!omiseRes.ok || chargeResult.status === 'failed') {
     return NextResponse.json({ error: chargeResult.failure_message || 'Payment failed' }, { status: 402 });
   }
@@ -89,12 +99,16 @@ export async function POST(request: NextRequest) {
     reference_id:   chargeResult.id,
   });
 
-  return NextResponse.json({
-    success: true,
-    depositAmount,
-    remainingAmount: Number(res.total_amount) - depositAmount,
-    chargeId: chargeResult.id,
-    paymentStatus: payStatus,
-    message: `ชำระมัดจำ ${depositPercent}% สำเร็จ ยอดค้างชำระ ฿${(Number(res.total_amount) - depositAmount).toLocaleString()} จ่ายที่โรงแรม`,
-  });
+    return NextResponse.json({
+      success: true,
+      depositAmount,
+      remainingAmount: Number(res.total_amount) - depositAmount,
+      chargeId: chargeResult.id,
+      paymentStatus: payStatus,
+      message: `ชำระมัดจำ ${depositPercent}% สำเร็จ ยอดค้างชำระ ฿${(Number(res.total_amount) - depositAmount).toLocaleString()} จ่ายที่โรงแรม`,
+      requestId,
+    });
+  } catch (error) {
+    return handleApiError(error, { request, tenantId });
+  }
 }
