@@ -33,7 +33,9 @@
     "deploy:docker": "docker compose up --build",
     "verify:deploy": "npm run final:verify && npm run deploy:check",
     "check:strict": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
-    "prebuild": "node scripts/ensure-next-installed.mjs"
+    "prebuild": "node scripts/ensure-next-installed.mjs",
+    "setup:codex": "npm install --no-audit --no-fund --progress=false --fetch-retries=5 --fetch-retry-maxtimeout=120000",
+    "setup": "npm run setup:codex"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
