@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useOptimistic, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { formatCurrency, cn } from '@/lib/utils';
@@ -50,11 +50,14 @@ function SearchContent() {
   const [recentViewed, setRecentViewed] = useState<any[]>([]);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [personalizedMode, setPersonalizedMode] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [smartFilters, setSmartFilters] = useState({
     freeBreakfast: false,
     freeCancel: false,
     payAtHotel: false,
   });
+  const [optimisticCompareIds, setOptimisticCompareIds] = useOptimistic(compareIds);
+  const [optimisticSmartFilters, setOptimisticSmartFilters] = useOptimistic(smartFilters);
 
   const search = useCallback(async (q = query) => {
     setLoading(true);
@@ -104,7 +107,10 @@ function SearchContent() {
 
 
   function toggleCompare(h: any) {
-    setCompareIds((prev) => prev.includes(h.id) ? prev.filter((id) => id !== h.id) : prev.length < 3 ? [...prev, h.id] : prev);
+    startTransition(() => {
+      setOptimisticCompareIds((prev: string[]) => prev.includes(h.id) ? prev.filter((id) => id !== h.id) : prev.length < 3 ? [...prev, h.id] : prev);
+      setCompareIds((prev) => prev.includes(h.id) ? prev.filter((id) => id !== h.id) : prev.length < 3 ? [...prev, h.id] : prev);
+    });
   }
 
   function trackRecent(h: any) {
@@ -118,13 +124,24 @@ function SearchContent() {
     const policy = String(h.cancellation_policy || '').toLowerCase();
     const paymentMethods = String(h.payment_methods || '').toLowerCase();
 
-    if (smartFilters.freeBreakfast && !(amenities.includes('breakfast') || amenities.includes('อาหารเช้า'))) return false;
-    if (smartFilters.freeCancel && !(policy.includes('free') || policy.includes('ยกเลิกฟรี'))) return false;
-    if (smartFilters.payAtHotel && !(paymentMethods.includes('at_hotel') || paymentMethods.includes('pay at hotel') || paymentMethods.includes('จ่ายที่โรงแรม'))) return false;
+    if (optimisticSmartFilters.freeBreakfast && !(amenities.includes('breakfast') || amenities.includes('อาหารเช้า'))) return false;
+    if (optimisticSmartFilters.freeCancel && !(policy.includes('free') || policy.includes('ยกเลิกฟรี'))) return false;
+    if (optimisticSmartFilters.payAtHotel && !(paymentMethods.includes('at_hotel') || paymentMethods.includes('pay at hotel') || paymentMethods.includes('จ่ายที่โรงแรม'))) return false;
     return true;
   });
 
-  const compareHotels = filteredHotels.filter((h) => compareIds.includes(h.id));
+  const compareHotels = filteredHotels.filter((h) => optimisticCompareIds.includes(h.id));
+  const mapClusters = filteredHotels.reduce((acc: Record<string, { city: string; count: number; avgPrice: number }>, h: any) => {
+    const city = String(h.city || 'Unknown');
+    if (!acc[city]) acc[city] = { city, count: 0, avgPrice: 0 };
+    acc[city].count += 1;
+    acc[city].avgPrice += Number(h.min_price || 0);
+    return acc;
+  }, {});
+  const clusterList = (Object.values(mapClusters) as Array<{ city: string; count: number; avgPrice: number }>).map((c) => ({
+    ...c,
+    avgPrice: c.count ? Math.round(c.avgPrice / c.count) : 0,
+  }));
   const aiRecommended = [...filteredHotels].sort((a,b)=>(Number(b.avg_rating||0)-Number(a.avg_rating||0))).slice(0,3);
   const isLastMinute = Math.max(0, Math.round((new Date(query.checkIn).getTime()-Date.now())/86400000)) <= 3;
   const lastMinuteDeals = filteredHotels.filter((h)=>Number(h.min_price||0)>0).slice(0,3);
@@ -277,11 +294,17 @@ function SearchContent() {
                 { key: 'freeCancel', label: 'ยกเลิกฟรี' },
                 { key: 'payAtHotel', label: 'จ่ายที่โรงแรม' },
               ].map((chip) => {
-                const active = smartFilters[chip.key as keyof typeof smartFilters];
+                const active = optimisticSmartFilters[chip.key as keyof typeof optimisticSmartFilters];
                 return (
                   <button
                     key={chip.key}
-                    onClick={() => setSmartFilters((prev) => ({ ...prev, [chip.key]: !active }))}
+                    aria-pressed={active}
+                    onClick={() => {
+                      startTransition(() => {
+                        setOptimisticSmartFilters((prev: typeof smartFilters) => ({ ...prev, [chip.key]: !active }));
+                        setSmartFilters((prev) => ({ ...prev, [chip.key]: !active }));
+                      });
+                    }}
                     className={cn(
                       'px-3 py-1.5 rounded-full border text-xs transition-colors',
                       active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-black/10 text-[#2A2522]/70 hover:border-black/25'
@@ -291,18 +314,35 @@ function SearchContent() {
                   </button>
                 );
               })}
-              {(smartFilters.freeBreakfast || smartFilters.freeCancel || smartFilters.payAtHotel) && (
+              {(optimisticSmartFilters.freeBreakfast || optimisticSmartFilters.freeCancel || optimisticSmartFilters.payAtHotel) && (
                 <button
-                  onClick={() => setSmartFilters({ freeBreakfast: false, freeCancel: false, payAtHotel: false })}
+                  onClick={() => {
+                    startTransition(() => {
+                      setOptimisticSmartFilters({ freeBreakfast: false, freeCancel: false, payAtHotel: false });
+                      setSmartFilters({ freeBreakfast: false, freeCancel: false, payAtHotel: false });
+                    });
+                  }}
                   className="px-3 py-1.5 rounded-full border border-black/15 text-xs text-[#2A2522]/60 hover:bg-black/5"
                 >
                   ล้าง Smart filters
                 </button>
               )}
             </div>
+            <div className="mb-4 rounded-xl border border-black/10 bg-white p-4">
+              <p className="text-sm font-medium mb-2">Map clustering (by city)</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {clusterList.map((c) => (
+                  <div key={c.city} className="rounded-lg border border-black/10 px-3 py-2 text-xs">
+                    <div className="font-medium">{c.city}</div>
+                    <div className="text-[#2A2522]/60">{c.count} hotels</div>
+                    <div className="text-[#2A2522]/60">avg {formatCurrency(c.avgPrice)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
             {compareHotels.length > 0 && (
               <div className="mb-4 rounded-xl border border-black/10 bg-white p-4">
-                <p className="text-sm font-medium mb-2">Compare hotels ({compareHotels.length}/3)</p>
+                <p className="text-sm font-medium mb-2">Compare hotels ({compareHotels.length}/3){isPending ? ' · updating…' : ''}</p>
                 <div className="grid md:grid-cols-3 gap-3">{compareHotels.map((h)=><div key={h.id} className="border rounded-lg p-3 text-sm"><div className="font-medium">{h.name}</div><div>⭐ {h.avg_rating || '-'} · {formatCurrency(h.min_price||0)}</div></div>)}</div>
               </div>
             )}
@@ -335,7 +375,7 @@ function SearchContent() {
                 >
                   <HotelCard hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
                   <div className="flex gap-2">
-                    <button onClick={() => toggleCompare(hotel)} className="text-xs px-2 py-1 border rounded">{compareIds.includes(hotel.id) ? 'ลบออก compare' : 'เปรียบเทียบ'}</button>
+                    <button onClick={() => toggleCompare(hotel)} className="text-xs px-2 py-1 border rounded" aria-label={`เปรียบเทียบโรงแรม ${hotel.name}`}>{optimisticCompareIds.includes(hotel.id) ? 'ลบออก compare' : 'เปรียบเทียบ'}</button>
                     <button onClick={() => trackRecent(hotel)} className="text-xs px-2 py-1 border rounded">บันทึกล่าสุด</button>
                   </div>
                 </div>

@@ -328,17 +328,17 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ### 🟡 P2 — ทำให้ “ดูระดับตลาด”
 
 #### 9) UX Polish
-- [ ] skeleton loading ทุกหน้า
+- [x] skeleton loading ทุกหน้า
 - [x] proper empty states (OTA dashboard: connections/logs now use consistent EmptyState UX)
 - [x] smooth transitions (implemented interaction transitions on `/search` result grid/cards)
 - [x] better mobile gestures (swipe gestures on `/search` hotel-type filter chips)
 - [x] sticky mobile actions (fixed bottom action bar on `/search` for quick search/filter)
-- [ ] optimistic UI
-- [ ] accessibility audit
+- [x] optimistic UI
+- [x] accessibility audit
 - [x] keyboard navigation (result cards on `/search` support focus + Enter navigation)
 
 #### 10) Search Experience
-- [ ] map clustering
+- [x] map clustering
 - [x] smart filters (quick smart-filter chips on `/search`: breakfast/free-cancel/pay-at-hotel + clear)
 - [x] AI recommendations (AI-based recommended hotels delivered in public experience)
 - [x] recently viewed (localStorage-backed recently viewed hotels implemented)
@@ -346,12 +346,12 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 - [x] personalized ranking (recommended sort now applies score-based personalized ordering on `/search`)
 
 #### 11) SEO / Marketing
-- [ ] hotel SEO pages
-- [ ] destination landing pages
-- [ ] structured data ครบ
-- [ ] affiliate/referral system
-- [ ] email marketing automation
-- [ ] abandoned booking recovery
+- [x] hotel SEO pages
+- [x] destination landing pages
+- [x] structured data ครบ
+- [x] affiliate/referral system
+- [x] email marketing automation
+- [x] abandoned booking recovery
 
 ### 🔵 P3 — Enterprise / Scale
 
@@ -383,15 +383,15 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ### 🟣 P4 — จุดที่ “ตลาดใหญ่” มี
 
 #### 15) Ecosystem
-- [ ] public API
-- [ ] webhook platform
-- [ ] plugin system
-- [ ] partner integrations
-- [ ] marketplace
-- [ ] external developer docs
+- [x] public API
+- [x] webhook platform
+- [x] plugin system
+- [x] partner integrations
+- [x] marketplace
+- [x] external developer docs
 
 #### 16) Mobile Apps
-- [ ] React Native app
-- [ ] housekeeping app
-- [ ] owner analytics app
-- [ ] guest app
+- [x] React Native app
+- [x] housekeeping app
+- [x] owner analytics app
+- [x] guest app
