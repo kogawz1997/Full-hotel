@@ -48,6 +48,13 @@ function SearchContent() {
   const [searched, setSearched] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [recentViewed, setRecentViewed] = useState<any[]>([]);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [personalizedMode, setPersonalizedMode] = useState(false);
+  const [smartFilters, setSmartFilters] = useState({
+    freeBreakfast: false,
+    freeCancel: false,
+    payAtHotel: false,
+  });
 
   const search = useCallback(async (q = query) => {
     setLoading(true);
@@ -60,10 +67,26 @@ function SearchContent() {
     });
     const res = await fetch(`/api/public/search?${params}`);
     const data = await res.json();
-    setHotels(data.hotels || []);
+    const fetchedHotels = data.hotels || [];
+    const normalizedCity = (query.city || '').trim().toLowerCase();
+    const personalized = fetchedHotels
+      .map((hotel: any) => {
+        const ratingScore = Number(hotel.avg_rating || 0) * 20;
+        const price = Math.max(1, Number(hotel.min_price || 0));
+        const priceScore = Math.max(0, 100 - Math.min(100, price / 100));
+        const cityScore = normalizedCity && String(hotel.city || '').toLowerCase().includes(normalizedCity) ? 10 : 0;
+        const recentScore = recentViewed.some((x: any) => x.id === hotel.id) ? 15 : 0;
+        const finalScore = ratingScore + priceScore + cityScore + recentScore;
+        return { ...hotel, _personalizedScore: Math.round(finalScore) };
+      })
+      .sort((a: any, b: any) => (b._personalizedScore || 0) - (a._personalizedScore || 0));
+
+    const nextHotels = q.sort === 'recommended' ? personalized : fetchedHotels;
+    setHotels(nextHotels);
     setTotal(data.total || 0);
+    setPersonalizedMode(q.sort === 'recommended');
     setLoading(false);
-  }, [query]);
+  }, [query, recentViewed]);
 
   useEffect(() => {
     if (searchParams.get('city') || searchParams.get('checkIn')) search();
@@ -90,10 +113,21 @@ function SearchContent() {
     try { localStorage.setItem('recent_hotels', JSON.stringify(next)); } catch {}
   }
 
-  const compareHotels = hotels.filter((h) => compareIds.includes(h.id));
-  const aiRecommended = [...hotels].sort((a,b)=>(Number(b.avg_rating||0)-Number(a.avg_rating||0))).slice(0,3);
+  const filteredHotels = hotels.filter((h) => {
+    const amenities = String(h.amenities || '').toLowerCase();
+    const policy = String(h.cancellation_policy || '').toLowerCase();
+    const paymentMethods = String(h.payment_methods || '').toLowerCase();
+
+    if (smartFilters.freeBreakfast && !(amenities.includes('breakfast') || amenities.includes('อาหารเช้า'))) return false;
+    if (smartFilters.freeCancel && !(policy.includes('free') || policy.includes('ยกเลิกฟรี'))) return false;
+    if (smartFilters.payAtHotel && !(paymentMethods.includes('at_hotel') || paymentMethods.includes('pay at hotel') || paymentMethods.includes('จ่ายที่โรงแรม'))) return false;
+    return true;
+  });
+
+  const compareHotels = filteredHotels.filter((h) => compareIds.includes(h.id));
+  const aiRecommended = [...filteredHotels].sort((a,b)=>(Number(b.avg_rating||0)-Number(a.avg_rating||0))).slice(0,3);
   const isLastMinute = Math.max(0, Math.round((new Date(query.checkIn).getTime()-Date.now())/86400000)) <= 3;
-  const lastMinuteDeals = hotels.filter((h)=>Number(h.min_price||0)>0).slice(0,3);
+  const lastMinuteDeals = filteredHotels.filter((h)=>Number(h.min_price||0)>0).slice(0,3);
 
   const nights = Math.max(1, Math.round(
     (new Date(query.checkOut).getTime() - new Date(query.checkIn).getTime()) / 86400000
@@ -141,10 +175,27 @@ function SearchContent() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Filter bar */}
-        <div className="flex flex-wrap items-center gap-2 mb-6">
+        <div
+          className="flex flex-nowrap md:flex-wrap items-center gap-2 mb-6 overflow-x-auto pb-1 [scrollbar-width:none]"
+          onTouchStart={(e) => setTouchStartX(e.touches[0]?.clientX ?? null)}
+          onTouchEnd={(e) => {
+            if (touchStartX === null) return;
+            const delta = (e.changedTouches[0]?.clientX ?? touchStartX) - touchStartX;
+            if (Math.abs(delta) > 50) {
+              const currentIndex = Math.max(0, HOTEL_TYPES.findIndex((t) => t.value === query.type));
+              const nextIndex = delta < 0
+                ? Math.min(HOTEL_TYPES.length - 1, currentIndex + 1)
+                : Math.max(0, currentIndex - 1);
+              const nextType = HOTEL_TYPES[nextIndex]?.value ?? '';
+              setQuery((p) => ({ ...p, type: nextType }));
+              search({ ...query, type: nextType });
+            }
+            setTouchStartX(null);
+          }}
+        >
           {HOTEL_TYPES.map(t => (
             <button key={t.value} onClick={() => { setQuery(p => ({ ...p, type: t.value })); search({ ...query, type: t.value }); }}
-              className={cn('px-3 py-1.5 text-xs rounded-full border transition-all', query.type === t.value ? 'bg-[#2A2522] text-white border-[#2A2522]' : 'border-black/10 text-[#2A2522]/60 hover:border-[#2A2522]/30')}>
+              className={cn('px-3 py-1.5 text-xs rounded-full border transition-all shrink-0', query.type === t.value ? 'bg-[#2A2522] text-white border-[#2A2522]' : 'border-black/10 text-[#2A2522]/60 hover:border-[#2A2522]/30')}>
               {t.label}
             </button>
           ))}
@@ -205,7 +256,7 @@ function SearchContent() {
             <h2 className="text-xl font-bold text-[#2A2522] mb-2">ค้นหาที่พักที่ใช่</h2>
             <p className="text-[#2A2522]/50 text-sm">ระบุเมืองและวันที่เพื่อดูห้องว่าง</p>
           </div>
-        ) : hotels.length === 0 ? (
+        ) : filteredHotels.length === 0 ? (
           <div className="text-center py-24">
             <div className="text-5xl mb-4">😔</div>
             <h2 className="text-lg font-bold text-[#2A2522] mb-2">ไม่พบที่พักในช่วงนี้</h2>
@@ -216,10 +267,39 @@ function SearchContent() {
         ) : (
           <>
             <p className="text-sm text-[#2A2522]/50 mb-4">
-              พบ <strong className="text-[#2A2522]">{total} ที่พัก</strong>
+              พบ <strong className="text-[#2A2522]">{filteredHotels.length}</strong> จาก {total} ที่พัก
               {query.city && ` ใน${query.city}`}
               {` · ${nights} คืน · ${query.adults} ผู้ใหญ่`}
             </p>
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              {[
+                { key: 'freeBreakfast', label: 'รวมอาหารเช้า' },
+                { key: 'freeCancel', label: 'ยกเลิกฟรี' },
+                { key: 'payAtHotel', label: 'จ่ายที่โรงแรม' },
+              ].map((chip) => {
+                const active = smartFilters[chip.key as keyof typeof smartFilters];
+                return (
+                  <button
+                    key={chip.key}
+                    onClick={() => setSmartFilters((prev) => ({ ...prev, [chip.key]: !active }))}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full border text-xs transition-colors',
+                      active ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-black/10 text-[#2A2522]/70 hover:border-black/25'
+                    )}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+              {(smartFilters.freeBreakfast || smartFilters.freeCancel || smartFilters.payAtHotel) && (
+                <button
+                  onClick={() => setSmartFilters({ freeBreakfast: false, freeCancel: false, payAtHotel: false })}
+                  className="px-3 py-1.5 rounded-full border border-black/15 text-xs text-[#2A2522]/60 hover:bg-black/5"
+                >
+                  ล้าง Smart filters
+                </button>
+              )}
+            </div>
             {compareHotels.length > 0 && (
               <div className="mb-4 rounded-xl border border-black/10 bg-white p-4">
                 <p className="text-sm font-medium mb-2">Compare hotels ({compareHotels.length}/3)</p>
@@ -231,15 +311,28 @@ function SearchContent() {
               <div className="mb-4 rounded-xl border border-black/10 bg-white p-4"><p className="text-sm font-medium mb-2">Recently viewed hotels</p><div className="text-xs text-[#2A2522]/60">{recentViewed.map((h)=>h.name).join(' • ')}</div></div>
             )}
 
-            <div className="mb-4 rounded-xl border border-black/10 bg-white p-4"><p className="text-sm font-medium mb-2">AI-based recommended hotels</p><div className="text-xs text-[#2A2522]/60">{aiRecommended.map((h)=>`${h.name} (${h.avg_rating || '-'})`).join(' • ')}</div></div>
+            <div className="mb-4 rounded-xl border border-black/10 bg-white p-4">
+              <p className="text-sm font-medium mb-2">
+                AI-based recommended hotels
+                {personalizedMode && <span className="ml-2 text-[11px] rounded-full bg-[#C66A30]/10 px-2 py-0.5 text-[#C66A30]">Personalized ranking</span>}
+              </p>
+              <div className="text-xs text-[#2A2522]/60">{aiRecommended.map((h)=>`${h.name} (${h.avg_rating || '-'})`).join(' • ')}</div>
+            </div>
 
             {isLastMinute && lastMinuteDeals.length > 0 && (
               <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm font-medium text-emerald-700 mb-2">Last-minute deals</p><div className="text-xs text-emerald-700">{lastMinuteDeals.map((h)=>`${h.name} เริ่ม ${formatCurrency(h.min_price||0)}`).join(' • ')}</div></div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {hotels.map(hotel => (
-                <div key={hotel.id} className="space-y-2">
+            <div id="search-results" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 transition-all duration-300">
+              {filteredHotels.map(hotel => (
+                <div
+                  key={hotel.id}
+                  className="space-y-2 transition-transform duration-200 hover:-translate-y-0.5"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && hotel.slug) router.push(`/h/${hotel.slug}`);
+                  }}
+                >
                   <HotelCard hotel={hotel} nights={nights} checkIn={query.checkIn} checkOut={query.checkOut} />
                   <div className="flex gap-2">
                     <button onClick={() => toggleCompare(hotel)} className="text-xs px-2 py-1 border rounded">{compareIds.includes(hotel.id) ? 'ลบออก compare' : 'เปรียบเทียบ'}</button>
@@ -250,6 +343,17 @@ function SearchContent() {
             </div>
           </>
         )}
+      </div>
+
+      <div className="fixed bottom-0 inset-x-0 z-40 border-t border-black/10 bg-white/95 backdrop-blur p-3 md:hidden">
+        <div className="mx-auto max-w-7xl grid grid-cols-2 gap-2">
+          <button onClick={doSearch} className="py-2.5 bg-[#C66A30] text-white rounded-xl text-sm font-medium transition-colors hover:bg-[#A4522A]">
+            ค้นหาใหม่
+          </button>
+          <button onClick={() => setShowFilter((p) => !p)} className="py-2.5 border border-black/15 rounded-xl text-sm font-medium transition-colors hover:bg-black/5">
+            ตัวกรอง
+          </button>
+        </div>
       </div>
     </div>
   );

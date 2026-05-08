@@ -330,20 +330,20 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 #### 9) UX Polish
 - [ ] skeleton loading ทุกหน้า
 - [x] proper empty states (OTA dashboard: connections/logs now use consistent EmptyState UX)
-- [ ] smooth transitions
-- [ ] better mobile gestures
-- [ ] sticky mobile actions
+- [x] smooth transitions (implemented interaction transitions on `/search` result grid/cards)
+- [x] better mobile gestures (swipe gestures on `/search` hotel-type filter chips)
+- [x] sticky mobile actions (fixed bottom action bar on `/search` for quick search/filter)
 - [ ] optimistic UI
 - [ ] accessibility audit
-- [ ] keyboard navigation
+- [x] keyboard navigation (result cards on `/search` support focus + Enter navigation)
 
 #### 10) Search Experience
 - [ ] map clustering
-- [ ] smart filters
-- [ ] AI recommendations
-- [ ] recently viewed
-- [ ] compare hotels
-- [ ] personalized ranking
+- [x] smart filters (quick smart-filter chips on `/search`: breakfast/free-cancel/pay-at-hotel + clear)
+- [x] AI recommendations (AI-based recommended hotels delivered in public experience)
+- [x] recently viewed (localStorage-backed recently viewed hotels implemented)
+- [x] compare hotels (2-3 hotels side-by-side compare feature implemented)
+- [x] personalized ranking (recommended sort now applies score-based personalized ordering on `/search`)
 
 #### 11) SEO / Marketing
 - [ ] hotel SEO pages
