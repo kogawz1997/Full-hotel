@@ -35,7 +35,9 @@
     "check:strict": "npm run type-check && npm run lint && npm run test:core-ops && npm run test:saas-integrations && npm run test:ops && npm run test:final",
     "prebuild": "node scripts/ensure-next-installed.mjs",
     "setup:codex": "npm install --no-audit --no-fund --progress=false --fetch-retries=5 --fetch-retry-maxtimeout=120000",
-    "setup": "npm run setup:codex"
+    "setup": "npm run setup:codex",
+    "go-live:evidence": "node scripts/collect-go-live-evidence.mjs",
+    "go-live:evidence:strict": "STRICT=true node scripts/collect-go-live-evidence.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
