@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { parseJson } from '@/lib/http/validation';
 import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
+import { HOTEL_ROLES } from '@/lib/hotel-roles';
 
 const patchSchema = z.object({
   userId: z.string().uuid(),
-  role: z.enum(['admin', 'manager', 'front_desk', 'housekeeping', 'staff']).optional(),
+  role: z.enum(HOTEL_ROLES).optional(),
   active: z.boolean().optional(),
 });
 

@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
 import { z } from 'zod';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 const RefundSchema = z.object({
   reservationId: z.string().uuid(),
@@ -16,6 +17,9 @@ const RefundSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const limited = await rateLimit(request, 'payments.refund', 20, 60_000);
+  if (limited) return limited;
+
   const raw = await request.json();
   const result = RefundSchema.safeParse(raw);
   if (!result.success) {
