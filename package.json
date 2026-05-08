@@ -21,7 +21,7 @@
     "security-check": "node scripts/security-audit.mjs",
     "test:core-ops": "node tests/core-ops.test.mjs",
     "test:saas-integrations": "node tests/saas-integrations.test.mjs",
-    "test:unit": "node tests/unit/core-policy.test.mjs && node tests/unit/availability-lock-guards.test.mjs && node tests/unit/reliability-sweep-policy.test.mjs && node tests/unit/reliability-metrics.test.mjs && node tests/unit/ai-assistant.test.mjs",
+    "test:unit": "node tests/unit/core-policy.test.mjs && node tests/unit/availability-lock-guards.test.mjs && node tests/unit/reliability-sweep-policy.test.mjs && node tests/unit/reliability-metrics.test.mjs && node tests/unit/ai-assistant.test.mjs && node tests/unit/go-live-hardening-regressions.test.mjs",
     "test:e2e": "node tests/e2e/production-flow.test.mjs",
     "check:uptime": "node scripts/check-uptime-config.mjs",
     "test:ops": "npm run check:uptime && npm run test:unit && npm run test:e2e",
@@ -36,8 +36,8 @@
     "prebuild": "node scripts/ensure-next-installed.mjs",
     "setup:codex": "npm install --no-audit --no-fund --progress=false --fetch-retries=5 --fetch-retry-maxtimeout=120000",
     "setup": "npm run setup:codex",
-    "check:cron": "node scripts/check-cron-monitoring.mjs",
-    "test:tenant-isolation": "npx playwright test tests/e2e/tenant-isolation.spec.ts"
+    "go-live:evidence": "node scripts/collect-go-live-evidence.mjs",
+    "go-live:evidence:strict": "STRICT=true node scripts/collect-go-live-evidence.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.30.1",

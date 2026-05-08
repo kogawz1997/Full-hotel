@@ -45,6 +45,7 @@
   - ผลรอบ baseline เดิม: ผ่าน 9/13, เหลือ fail 4 จุด (`/api/health`=503, `/api/ops/readiness`=401, `/api/public/search`=500, `/api/billing` expected 401 แต่ได้ 405)
 - [x] แก้โค้ด hardening สำหรับ smoke blockers ที่เคยพบ (`/api/ops/readiness`, `/api/public/search`, auth behavior billing)
 - [x] รัน smoke ซ้ำบน environment ที่เปิดเซิร์ฟเวอร์ (demo env) แล้ว — ผลล่าสุดผ่าน `13/13`
+- [x] รัน `npm run go-live:evidence` + `npm run go-live:evidence:strict` บน demo env — ผลล่าสุดผ่าน `4/4` และอัปเดต `docs/operations/GO_LIVE_EVIDENCE_LATEST.md`
 
 ---
 ## 🔴 Sprint 1 — ทำก่อน launch

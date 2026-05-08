@@ -18,13 +18,13 @@
 
 ### Owner + Due date (สำหรับปิดงานค้างรอบถัดไป)
 
-| Workstream | Primary Owner | Backup Owner | Target Due Date (UTC) | Status |
-|---|---|---|---|---|
-| SendGrid sender/domain verification | Ops | Owner | 2026-05-10 | Waiting execution |
-| Upstash Redis provisioning + env inject | Ops | SRE | 2026-05-10 | Waiting execution |
-| Stripe live secret/key rotation | Finance/Ops | Owner | 2026-05-11 | Waiting execution |
-| Sentry project + DSN wiring | SRE/Ops | Ops | 2026-05-11 | Waiting execution |
-| Supabase email verification validation | Owner/Ops | Dev | 2026-05-11 | Waiting execution |
+| Workstream | Primary Owner | Backup Owner | Ticket/Issue | Target Due Date (UTC) | Status |
+|---|---|---|---|---|---|
+| SendGrid sender/domain verification | Ops | Owner | OPS-GL-001 | 2026-05-10 | Waiting execution |
+| Upstash Redis provisioning + env inject | Ops | SRE | OPS-GL-002 | 2026-05-10 | Waiting execution |
+| Stripe live secret/key rotation | Finance/Ops | Owner | OPS-GL-003 | 2026-05-11 | Waiting execution |
+| Sentry project + DSN wiring | SRE/Ops | Ops | OPS-GL-004 | 2026-05-11 | Waiting execution |
+| Supabase email verification validation | Owner/Ops | Dev | OPS-GL-005 | 2026-05-11 | Waiting execution |
 
 ---
 
@@ -60,9 +60,14 @@
 ### 2.2 คำสั่งที่ทีม Ops ใช้ได้ทันทีหลังเติม env
 
 ```bash
+export BASE_URL=https://yourdomain.com
+# optional for protected endpoints
+# export AUTH_HEADER=x-ops-token
+# export AUTH_TOKEN=replace-with-token
 npm run check:env
 npm run smoke
-curl -i http://localhost:3000/api/ops/readiness
+npm run go-live:evidence
+curl -i "$BASE_URL/api/ops/readiness"
 ```
 
 ### 2.3 เกณฑ์ปิดงานค้างทีละข้อ

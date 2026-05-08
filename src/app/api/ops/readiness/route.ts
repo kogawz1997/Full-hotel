@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { deriveReadinessStatus, type ReadinessCheck } from '@/lib/ops/readiness-status';
 
 export const runtime = 'nodejs';
 
-type Check = { ok: boolean; message: string; latencyMs?: number };
+type Check = ReadinessCheck;
 
 async function timed(name: string, fn: () => Promise<void>): Promise<[string, Check]> {
   const t0 = Date.now();
@@ -46,6 +47,10 @@ export async function GET() {
         const { error } = await admin.from('automation_rules').select('id').limit(1);
         if (error) throw new Error('automation_rules missing or inaccessible');
       }),
+      timed('audit_logs', async () => {
+        const { error } = await admin.from('audit_logs').select('id').limit(1);
+        if (error) throw new Error('audit_logs missing or inaccessible');
+      }),
     ]));
   } catch (error: unknown) {
     checks = {
@@ -53,6 +58,7 @@ export async function GET() {
       operational_events: { ok: false, message: 'database unavailable' },
       billing_tables: { ok: false, message: 'database unavailable' },
       automation_tables: { ok: false, message: 'database unavailable' },
+      audit_logs: { ok: false, message: 'database unavailable' },
     };
   }
 
@@ -73,9 +79,10 @@ export async function GET() {
     message: `optional configured: ${optionalEnv.filter(k => !!process.env[k]).join(', ') || 'none'}`,
   };
 
-  const ok = Object.values(checks).every((c: any) => c.ok);
+  const status = deriveReadinessStatus(checks);
+
   return NextResponse.json({
-    status: ok ? 'ready' : 'blocked',
+    status,
     generatedAt: new Date().toISOString(),
     checks,
   }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
