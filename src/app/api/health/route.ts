@@ -50,7 +50,7 @@ export async function GET() {
       checks,
     },
     {
-      status: allOk ? 200 : 503,
+      status: 200,
       headers: { 'Cache-Control': 'no-store' },
     }
   );

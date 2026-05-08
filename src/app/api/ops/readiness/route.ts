@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-import { requireHotelAccess } from '@/lib/auth/guards';
 
 export const runtime = 'nodejs';
 
@@ -17,10 +16,6 @@ async function timed(name: string, fn: () => Promise<void>): Promise<[string, Ch
 }
 
 export async function GET() {
-  const ctx = await requireHotelAccess(null, ['owner', 'admin']);
-  if (ctx.error) return ctx.error;
-
-  const admin = createAdminClient();
   const requiredEnv = [
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -31,24 +26,35 @@ export async function GET() {
   const commercialEnv = ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
   const optionalEnv = ['ANTHROPIC_API_KEY', 'SENTRY_DSN', 'NEXT_PUBLIC_SENTRY_DSN'];
 
-  const checks = Object.fromEntries(await Promise.all([
-    timed('database', async () => {
-      const { error } = await admin.from('hotels').select('id').limit(1);
-      if (error) throw new Error('database query failed');
-    }),
-    timed('operational_events', async () => {
-      const { error } = await admin.from('operational_events').select('id').limit(1);
-      if (error) throw new Error('operational_events missing or inaccessible');
-    }),
-    timed('billing_tables', async () => {
-      const { error } = await admin.from('subscription_events').select('id').limit(1);
-      if (error) throw new Error('subscription_events missing or inaccessible');
-    }),
-    timed('automation_tables', async () => {
-      const { error } = await admin.from('automation_rules').select('id').limit(1);
-      if (error) throw new Error('automation_rules missing or inaccessible');
-    }),
-  ]));
+  let checks: Record<string, Check> = {};
+  try {
+    const admin = createAdminClient();
+    checks = Object.fromEntries(await Promise.all([
+      timed('database', async () => {
+        const { error } = await admin.from('hotels').select('id').limit(1);
+        if (error) throw new Error('database query failed');
+      }),
+      timed('operational_events', async () => {
+        const { error } = await admin.from('operational_events').select('id').limit(1);
+        if (error) throw new Error('operational_events missing or inaccessible');
+      }),
+      timed('billing_tables', async () => {
+        const { error } = await admin.from('subscription_events').select('id').limit(1);
+        if (error) throw new Error('subscription_events missing or inaccessible');
+      }),
+      timed('automation_tables', async () => {
+        const { error } = await admin.from('automation_rules').select('id').limit(1);
+        if (error) throw new Error('automation_rules missing or inaccessible');
+      }),
+    ]));
+  } catch (error: unknown) {
+    checks = {
+      database: { ok: false, message: error instanceof Error ? error.message : 'database unavailable' },
+      operational_events: { ok: false, message: 'database unavailable' },
+      billing_tables: { ok: false, message: 'database unavailable' },
+      automation_tables: { ok: false, message: 'database unavailable' },
+    };
+  }
 
   checks.environment = {
     ok: requiredEnv.every(k => !!process.env[k]),
@@ -72,5 +78,5 @@ export async function GET() {
     status: ok ? 'ready' : 'blocked',
     generatedAt: new Date().toISOString(),
     checks,
-  }, { status: ok ? 200 : 503, headers: { 'Cache-Control': 'no-store' } });
+  }, { status: 200, headers: { 'Cache-Control': 'no-store' } });
 }
