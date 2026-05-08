@@ -11,7 +11,44 @@ const schema = z.object({
   checkIn: dateStringSchema,
   checkOut: dateStringSchema,
   ratePlanId: z.string().uuid().optional().nullable(),
+  promoCode: z.string().trim().max(32).optional().nullable(),
 });
+
+
+function isWeekendDate(dateIso: string) {
+  const d = new Date(`${dateIso}T00:00:00.000Z`);
+  const day = d.getUTCDay();
+  return day === 0 || day === 6;
+}
+
+
+function seasonalMultiplier(dateIso: string) {
+  const month = new Date(`${dateIso}T00:00:00.000Z`).getUTCMonth() + 1;
+  const highMonths = (process.env.HIGH_SEASON_MONTHS || '12,1').split(',').map((m) => Number(m.trim())).filter(Boolean);
+  const lowMonths = (process.env.LOW_SEASON_MONTHS || '5,9').split(',').map((m) => Number(m.trim())).filter(Boolean);
+  const highMult = Number(process.env.HIGH_SEASON_MULTIPLIER || 1.2);
+  const lowMult = Number(process.env.LOW_SEASON_MULTIPLIER || 0.9);
+  if (highMonths.includes(month)) return highMult;
+  if (lowMonths.includes(month)) return lowMult;
+  return 1;
+}
+
+
+function bookingWindowMultiplier(checkIn: string) {
+  const today = new Date();
+  const ci = new Date(`${checkIn}T00:00:00.000Z`);
+  const leadDays = Math.max(0, Math.ceil((ci.getTime() - today.getTime()) / 86_400_000));
+  if (leadDays <= 3) return Number(process.env.LAST_MINUTE_MULTIPLIER || 1.12);
+  if (leadDays <= 7) return Number(process.env.SHORT_WINDOW_MULTIPLIER || 1.06);
+  return 1;
+}
+
+function withWeekdayWeekendRule(baseRate: number, dateIso: string) {
+  const weekendMultiplier = Number(process.env.WEEKEND_RATE_MULTIPLIER || 1.1);
+  const weekdayMultiplier = Number(process.env.WEEKDAY_RATE_MULTIPLIER || 1);
+  const dayAdjusted = isWeekendDate(dateIso) ? baseRate * weekendMultiplier : baseRate * weekdayMultiplier;
+  return dayAdjusted * seasonalMultiplier(dateIso);
+}
 
 export async function POST(request: Request) {
   const limited = await rateLimit(request, 'bookings.quote', 30, 60_000);
@@ -19,7 +56,7 @@ export async function POST(request: Request) {
 
   const parsed = await parseJson(request, schema);
   if (parsed.error) return parsed.error;
-  const { hotelId, roomTypeId, checkIn, checkOut, ratePlanId } = parsed.data;
+  const { hotelId, roomTypeId, checkIn, checkOut, ratePlanId, promoCode } = parsed.data;
 
   const nights = calculateNights(checkIn, checkOut);
   if (nights < 1 || nights > 365) {
@@ -66,9 +103,10 @@ export async function POST(request: Request) {
     const blocked = rates.find((r: any) => r.closed_to_arrival || r.closed_to_departure || Number(r.min_stay || 1) > nights);
     if (blocked) return NextResponse.json({ error: 'Selected dates are restricted', blockedDate: blocked.date }, { status: 409 });
     rates.forEach((r: any) => {
-      const rate = Number(r.rate);
-      totalPrice += rate;
-      breakdown.push({ date: r.date, rate });
+      const baseRate = Number(r.rate);
+      const adjustedRate = withWeekdayWeekendRule(baseRate, r.date);
+      totalPrice += adjustedRate;
+      breakdown.push({ date: r.date, rate: adjustedRate });
     });
   } else {
     totalPrice = Number(roomType.base_rate || 0) * nights;
@@ -76,8 +114,40 @@ export async function POST(request: Request) {
     breakdown = Array.from({ length: nights }).map((_, index) => {
       const d = new Date(start);
       d.setUTCDate(start.getUTCDate() + index);
-      return { date: d.toISOString().slice(0, 10), rate: Number(roomType.base_rate || 0) };
+      const date = d.toISOString().slice(0, 10);
+      return { date, rate: withWeekdayWeekendRule(Number(roomType.base_rate || 0), date) };
     });
+    totalPrice = breakdown.reduce((sum, item) => sum + item.rate, 0);
+  }
+
+  const dynamicMultiplier = bookingWindowMultiplier(checkIn);
+  totalPrice = Math.round(totalPrice * dynamicMultiplier);
+
+  let discountAmount = 0;
+  let appliedPromo: null | { id: string; code: string } = null;
+  if (promoCode) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: promo } = await supabase
+      .from('promo_codes')
+      .select('id, code, valid_from, valid_until, max_uses, used_count, min_amount, discount_type, discount_value, active')
+      .eq('hotel_id', hotelId)
+      .eq('code', promoCode.toUpperCase())
+      .eq('active', true)
+      .maybeSingle();
+
+    if (promo && (!promo.valid_from || promo.valid_from <= today) && (!promo.valid_until || promo.valid_until >= today)) {
+      if (!promo.max_uses || Number(promo.used_count || 0) < Number(promo.max_uses || 0)) {
+        if (!promo.min_amount || totalPrice >= Number(promo.min_amount || 0)) {
+          if (promo.discount_type === 'percent') {
+            discountAmount = Math.round(totalPrice * (Number(promo.discount_value || 0) / 100));
+          } else {
+            discountAmount = Math.min(Number(promo.discount_value || 0), totalPrice);
+          }
+          appliedPromo = { id: promo.id, code: promo.code };
+          totalPrice = Math.max(0, totalPrice - discountAmount);
+        }
+      }
+    }
   }
 
   const { data: existingResvs } = await supabase
@@ -98,5 +168,9 @@ export async function POST(request: Request) {
 
   const available = Math.max(0, (rooms?.length || 0) - (existingResvs?.length || 0));
 
-  return NextResponse.json({ nights, totalPrice, pricePerNight: nights ? totalPrice / nights : 0, available, breakdown });
+  const occupancyRatio = (rooms?.length || 0) > 0 ? (existingResvs?.length || 0) / (rooms?.length || 1) : 0;
+  const occupancyMultiplier = occupancyRatio >= 0.85 ? 1.15 : occupancyRatio >= 0.65 ? 1.08 : 1;
+  totalPrice = Math.round(totalPrice * occupancyMultiplier);
+
+  return NextResponse.json({ nights, totalPrice, dynamicMultiplier, discountAmount, appliedPromo, occupancyMultiplier, occupancyRatio, pricePerNight: nights ? totalPrice / nights : 0, available, breakdown });
 }

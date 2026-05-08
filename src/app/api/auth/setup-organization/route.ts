@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { bootstrapOwnerAccount } from '@/lib/auth/onboarding';
 import { parseJson } from '@/lib/http/validation';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 const schema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -20,6 +21,9 @@ function toSlug(value: string) {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimit(request, 'auth.setup-organization', 5, 60_000);
+  if (limited) return limited;
+
   const parsed = await parseJson(request, schema);
   if (parsed.error) return parsed.error;
   const { fullName, hotelName } = parsed.data;

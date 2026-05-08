@@ -115,7 +115,7 @@ export default function HomePage() {
             <a href="#reviews"  className="hover:text-white transition-colors">รีวิว</a>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/auth/login" className="text-sm text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-all">
+            <Link href="/auth/login/owner" className="text-sm text-white/70 hover:text-white px-4 py-2 rounded-lg hover:bg-white/10 transition-all">
               เข้าสู่ระบบ
             </Link>
             <Link href="/auth/signup"

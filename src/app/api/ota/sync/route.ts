@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireHotelAccess } from '@/lib/auth/guards';
+import { rateLimit } from '@/lib/security/rate-limit';
 const BodySchema = z.object({ connection_id: z.string().uuid(), direction: z.enum(['push', 'pull']).default('push'), type: z.enum(['rates', 'inventory', 'reservations', 'full']).default('full'), payload: z.record(z.any()).optional() });
 export async function POST(request: Request) {
+  const limited = await rateLimit(request, 'ota.sync.create', 20, 60_000);
+  if (limited) return limited;
   const ctx = await requireHotelAccess(null, ['owner', 'admin', 'manager']); if (ctx.error) return ctx.error;
   const parsed = BodySchema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   const { data: connection, error: connectionError } = await ctx.supabase.from('ota_connections').select('*').eq('id', parsed.data.connection_id).eq('hotel_id', ctx.hotelId).single();

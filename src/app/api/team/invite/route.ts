@@ -5,10 +5,11 @@ import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
 import { rateLimit } from '@/lib/security/rate-limit';
 import sgMail from '@sendgrid/mail';
+import { HOTEL_ROLES, HOTEL_ROLE_LABEL } from '@/lib/hotel-roles';
 
 const schema = z.object({
   email: z.string().email(),
-  role: z.enum(['admin', 'manager', 'front_desk', 'housekeeping', 'staff']),
+  role: z.enum(HOTEL_ROLES),
   hotelId: z.string().uuid().optional(),
 });
 
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   if (parsed.error) return parsed.error;
   const { email, role, hotelId } = parsed.data;
 
-  const ctx = await requireHotelAccess(hotelId, ['owner', 'admin']);
+  const ctx = await requireHotelAccess(hotelId, ['owner']);
   if (ctx.error) return ctx.error;
   if (!ctx.profile) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 403 });
@@ -77,10 +78,7 @@ export async function POST(request: Request) {
   if (process.env.SENDGRID_API_KEY) {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const { data: hotel } = await admin.from('hotels').select('name').eq('id', ctx.hotelId!).single();
-    const roleLabels: Record<string, string> = {
-      admin: 'ผู้ดูแลระบบ', manager: 'ผู้จัดการ', front_desk: 'พนักงานต้อนรับ',
-      housekeeping: 'แม่บ้าน', staff: 'พนักงาน',
-    };
+    const roleLabels = HOTEL_ROLE_LABEL;
     await sgMail.send({
       to: email,
       from: process.env.SENDGRID_FROM_EMAIL || 'noreply@maitri.co',

@@ -4,6 +4,7 @@ import { requireHotelAccess } from '@/lib/auth/guards';
 import { parseJson } from '@/lib/http/validation';
 import { rateLimit } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/server';
+import { HOTEL_ROLES } from '@/lib/hotel-roles';
 
 // GET — list all team members
 export async function GET(request: Request) {
@@ -26,7 +27,7 @@ export async function GET(request: Request) {
 // PATCH — update member role or deactivate
 const patchSchema = z.object({
   memberId: z.string().uuid(),
-  role: z.enum(['admin', 'manager', 'front_desk', 'housekeeping', 'staff']).optional(),
+  role: z.enum(HOTEL_ROLES).optional(),
   active: z.boolean().optional(),
 });
 
@@ -38,7 +39,7 @@ export async function PATCH(request: Request) {
   if (parsed.error) return parsed.error;
   const { memberId, role, active } = parsed.data;
 
-  const ctx = await requireHotelAccess(null, ['owner', 'admin']);
+  const ctx = await requireHotelAccess(null, ['owner']);
   if (ctx.error) return ctx.error;
   if (!ctx.profile) {
     return NextResponse.json({ error: 'Profile not found' }, { status: 403 });
@@ -64,6 +65,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Only owners can modify admin accounts' }, { status: 403 });
   }
 
+  const before = { role: target.role, active: (target as any).active };
   const updates: Record<string, any> = {};
   if (role !== undefined) updates.role = role;
   if (active !== undefined) updates.active = active;
@@ -83,7 +85,13 @@ export async function PATCH(request: Request) {
     action: 'team.member_updated',
     entity_type: 'user',
     entity_id: memberId,
-    changes: updates,
+    changes: {
+      actor_email: (ctx.user as any)?.email,
+      actor_role: ctx.profile.role,
+      before,
+      after: updates,
+      changed_at: new Date().toISOString(),
+    },
   });
 
   return NextResponse.json({ success: true });
