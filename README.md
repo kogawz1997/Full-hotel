@@ -38,6 +38,18 @@ Maitri คือ **Hotel PMS แบบ SaaS สำหรับตลาดไท
 
 ---
 
+## 📚 เอกสารสำคัญ (อัปเดตล่าสุด)
+
+- `TODO.md` — สถานะงานและ checklist ก่อน go-live
+- `docs/GITHUB_FILE_STATUS.md` — รายละเอียดทุกไฟล์ที่แสดงบน GitHub (tracked files ทั้งหมด)
+- `docs/PROJECT_FILE_INVENTORY.md` — สรุป inventory + รายการไฟล์ทั้งหมด
+- `docs/MARKDOWN_DOC_STATUS.md` — สถานะล่าสุดของไฟล์เอกสาร `.md` ทั้งโปรเจกต์
+- `ROADMAP.md` — แผนงานและทิศทางฟีเจอร์
+
+> หมายเหตุ: รายการไฟล์แบบละเอียดถูก generate จาก `git ls-files` เพื่อให้ตรงกับสิ่งที่เห็นบน GitHub
+
+---
+
 ## ✨ Features
 
 ### 🏨 Hotel Dashboard — ระบบหลังบ้านครบวงจร

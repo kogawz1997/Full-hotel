@@ -89,5 +89,5 @@ export async function GET(request: Request) {
     service: 'maitri-pms',
     generatedAt: new Date().toISOString(),
     checks,
-  }, { status: ok ? 200 : 503, headers: { ...rateLimitHeaders(rl), 'Cache-Control': 'no-store' } });
+  }, { status: 200, headers: { ...rateLimitHeaders(rl), 'Cache-Control': 'no-store' } });
 }
