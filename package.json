@@ -21,7 +21,7 @@
     "security-check": "node scripts/security-audit.mjs",
     "test:core-ops": "node tests/core-ops.test.mjs",
     "test:saas-integrations": "node tests/saas-integrations.test.mjs",
-    "test:unit": "node tests/unit/core-policy.test.mjs && node tests/unit/availability-lock-guards.test.mjs",
+    "test:unit": "node tests/unit/core-policy.test.mjs && node tests/unit/availability-lock-guards.test.mjs && node tests/unit/reliability-sweep-policy.test.mjs && node tests/unit/reliability-metrics.test.mjs && node tests/unit/ai-assistant.test.mjs",
     "test:e2e": "node tests/e2e/production-flow.test.mjs",
     "check:uptime": "node scripts/check-uptime-config.mjs",
     "test:ops": "npm run check:uptime && npm run test:unit && npm run test:e2e",

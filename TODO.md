@@ -356,29 +356,29 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ### 🔵 P3 — Enterprise / Scale
 
 #### 12) Reliability Engineering
-- [ ] queue workers
-- [ ] dead-letter queue
-- [ ] async processing
-- [ ] failover jobs
-- [ ] backup automation
-- [ ] health monitoring
-- [ ] uptime monitoring
-- [ ] tracing/observability
+- [x] queue workers
+- [x] dead-letter queue
+- [x] async processing
+- [x] failover jobs
+- [x] backup automation
+- [x] health monitoring
+- [x] uptime monitoring
+- [x] tracing/observability
 
 #### 13) Multi-property
-- [ ] chain hotel support
-- [ ] central inventory
-- [ ] central reporting
-- [ ] shared guest profiles
-- [ ] organization hierarchy
+- [x] chain hotel support
+- [x] central inventory
+- [x] central reporting
+- [x] shared guest profiles
+- [x] organization hierarchy
 
 #### 14) AI Layer
-- [ ] AI intent routing
-- [ ] AI escalation
-- [ ] AI suggested replies
-- [ ] AI revenue forecasting
-- [ ] AI occupancy prediction
-- [ ] AI pricing assistant
+- [x] AI intent routing
+- [x] AI escalation
+- [x] AI suggested replies
+- [x] AI revenue forecasting
+- [x] AI occupancy prediction
+- [x] AI pricing assistant
 
 ### 🟣 P4 — จุดที่ “ตลาดใหญ่” มี
 
