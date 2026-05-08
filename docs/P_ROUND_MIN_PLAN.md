@@ -4,6 +4,9 @@ Updated: 2026-05-06
 
 เป้าหมาย: รวมงานที่ค้างทั้งหมดใน `TODO.md` แล้วจัดเป็น **รอบ P ให้น้อยที่สุด** โดยยังคุมความเสี่ยงก่อน deploy ได้จริง
 
+> Single source of truth for current real execution status:
+> `docs/MASTER_4P_TASKS.md`
+
 ---
 
 ## Status Update
@@ -16,6 +19,8 @@ Updated: 2026-05-06
   - ✅ Item 3 (Trust & SEO): Closed on 2026-05-08
   - ✅ Item 4 (Growth modules): Closed on 2026-05-08
   - ✅ Item 5 (Platform add-ons): Closed on 2026-05-08
+
+> หมายเหตุ: สถานะเชิงปฏิบัติการรายหัวข้อ (Done/In Progress/Planned) ให้ยึดตาม `docs/MASTER_4P_TASKS.md`
 
 ---
 
