@@ -44,6 +44,7 @@ function SearchContent() {
   const [hotels, setHotels] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [showFilter, setShowFilter] = useState(false);
   const [searched, setSearched] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -87,6 +88,7 @@ function SearchContent() {
     const nextHotels = q.sort === 'recommended' ? personalized : fetchedHotels;
     setHotels(nextHotels);
     setTotal(data.total || 0);
+    setVisibleCount(12);
     setPersonalizedMode(q.sort === 'recommended');
     setLoading(false);
   }, [query, recentViewed]);
@@ -130,6 +132,7 @@ function SearchContent() {
     return true;
   });
 
+  const visibleHotels = filteredHotels.slice(0, visibleCount);
   const compareHotels = filteredHotels.filter((h) => optimisticCompareIds.includes(h.id));
   const mapClusters = filteredHotels.reduce((acc: Record<string, { city: string; count: number; avgPrice: number }>, h: any) => {
     const city = String(h.city || 'Unknown');
@@ -143,8 +146,10 @@ function SearchContent() {
     avgPrice: c.count ? Math.round(c.avgPrice / c.count) : 0,
   }));
   const aiRecommended = [...filteredHotels].sort((a,b)=>(Number(b.avg_rating||0)-Number(a.avg_rating||0))).slice(0,3);
-  const isLastMinute = Math.max(0, Math.round((new Date(query.checkIn).getTime()-Date.now())/86400000)) <= 3;
+  const daysBeforeCheckIn = Math.max(0, Math.round((new Date(query.checkIn).getTime()-Date.now())/86400000));
+  const isLastMinute = daysBeforeCheckIn <= 3;
   const lastMinuteDeals = filteredHotels.filter((h)=>Number(h.min_price||0)>0).slice(0,3);
+  const shouldShowPreStayMessage = searched && daysBeforeCheckIn <= 7 && filteredHotels.length > 0;
 
   const nights = Math.max(1, Math.round(
     (new Date(query.checkOut).getTime() - new Date(query.checkIn).getTime()) / 86400000
@@ -362,9 +367,17 @@ function SearchContent() {
             {isLastMinute && lastMinuteDeals.length > 0 && (
               <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4"><p className="text-sm font-medium text-emerald-700 mb-2">Last-minute deals</p><div className="text-xs text-emerald-700">{lastMinuteDeals.map((h)=>`${h.name} เริ่ม ${formatCurrency(h.min_price||0)}`).join(' • ')}</div></div>
             )}
+            {shouldShowPreStayMessage && (
+              <div className="mb-4 rounded-xl border border-sky-200 bg-sky-50 p-4">
+                <p className="text-sm font-medium text-sky-700 mb-1">Pre-stay tips ({daysBeforeCheckIn} วันก่อนเข้าพัก)</p>
+                <p className="text-xs text-sky-700">
+                  แนะนำเลือกที่พักที่มี “ยกเลิกฟรี” และ “จ่ายที่โรงแรม” เพื่อความยืดหยุ่นก่อนเดินทาง
+                </p>
+              </div>
+            )}
 
             <div id="search-results" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 transition-all duration-300">
-              {filteredHotels.map(hotel => (
+              {visibleHotels.map(hotel => (
                 <div
                   key={hotel.id}
                   className="space-y-2 transition-transform duration-200 hover:-translate-y-0.5"
@@ -381,6 +394,16 @@ function SearchContent() {
                 </div>
               ))}
             </div>
+            {filteredHotels.length > visibleCount && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setVisibleCount((n) => n + 12)}
+                  className="px-5 py-2 rounded-full border border-black/15 text-sm font-medium text-[#2A2522] hover:border-[#2A2522]/35 hover:bg-white transition-colors"
+                >
+                  โหลดเพิ่ม ({Math.min(12, filteredHotels.length - visibleCount)} รายการ)
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
