@@ -1,14 +1,12 @@
 import crypto from 'crypto';
 
-const usedTokens = new Set<string>();
-
 type Payload = { hotelId: string; exp: number; jti: string };
 
 function secret() {
   return process.env.STAFF_LINK_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret-change-me';
 }
 
-export function createStaffLoginToken(hotelId: string, ttlMinutes = 60) {
+export function createStaffLoginToken(hotelId: string, ttlMinutes = 60 * 24 * 365) {
   const payload: Payload = {
     hotelId,
     exp: Date.now() + ttlMinutes * 60_000,
@@ -19,7 +17,7 @@ export function createStaffLoginToken(hotelId: string, ttlMinutes = 60) {
   return `${body}.${sig}`;
 }
 
-export function consumeStaffLoginToken(token: string) {
+export function validateStaffLoginToken(token: string) {
   const [body, sig] = token.split('.');
   if (!body || !sig) return { ok: false as const, error: 'invalid_token' };
   const expected = crypto.createHmac('sha256', secret()).update(body).digest('base64url');
@@ -28,8 +26,9 @@ export function consumeStaffLoginToken(token: string) {
   const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as Payload;
   if (!payload?.hotelId || !payload?.exp || !payload?.jti) return { ok: false as const, error: 'invalid_payload' };
   if (Date.now() > payload.exp) return { ok: false as const, error: 'expired' };
-  if (usedTokens.has(payload.jti)) return { ok: false as const, error: 'already_used' };
-
-  usedTokens.add(payload.jti);
   return { ok: true as const, hotelId: payload.hotelId, exp: payload.exp };
 }
+
+// Backward-compatible alias for old call sites
+export const consumeStaffLoginToken = validateStaffLoginToken;
+

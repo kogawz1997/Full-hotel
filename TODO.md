@@ -287,24 +287,24 @@ SENTRY_DSN=https://xxx@sentry.io/xxx (ถ้าทำ monitoring)
 ### 🟠 P1 — ระบบตลาดจริงต้องมี
 
 #### 5) OTA / Channel Manager — Real Sync
-- [ ] Booking.com sync worker
-- [ ] Agoda sync worker
-- [ ] Airbnb sync worker
+- [x] Booking.com sync worker (provider-specific worker endpoint for queued Booking.com jobs)
+- [x] Agoda sync worker (provider-specific worker endpoint for queued Agoda jobs)
+- [x] Airbnb sync worker (provider-specific worker endpoint for queued Airbnb jobs)
 - [x] retry queue (`ota_sync_queue` supports pending/retry/failed with attempts)
 - [x] conflict resolution (duplicate reservation events tracked in `ota_reservation_events`)
 - [x] rate limit handling (OTA sync/process endpoints protected with per-IP rate limiting)
 - [x] webhook sync (Booking.com/Agoda webhooks now enqueue OTA reservation jobs when hotel ID is provided)
-- [ ] inventory reconciliation
+- [x] inventory reconciliation (manual reconcile endpoint queues inventory sync jobs for active OTA connections)
 
 #### 6) Pricing Engine
-- [ ] dynamic pricing
-- [ ] seasonal pricing
-- [ ] occupancy-based pricing
-- [ ] weekday/weekend rules
-- [ ] promo engine
-- [ ] coupon engine
-- [ ] minimum stay rules
-- [ ] closed-to-arrival/departure
+- [x] dynamic pricing (quote applies lead-time based dynamic multipliers for short booking windows)
+- [x] seasonal pricing (quote fallback applies high/low season month multipliers)
+- [x] occupancy-based pricing (quote applies occupancy multiplier based on remaining room pressure)
+- [x] weekday/weekend rules (quote fallback applies weekend/weekday multipliers when calendar overrides are missing)
+- [x] promo engine (bookings quote applies promo code validation and discount rules)
+- [x] coupon engine (promo code input supports fixed/percent coupon discounts)
+- [x] minimum stay rules (enforced in bookings quote via rate_calendar.min_stay validation)
+- [x] closed-to-arrival/departure (enforced in bookings quote restriction checks)
 
 #### 7) Accounting
 - [ ] invoice numbering logic

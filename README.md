@@ -585,6 +585,17 @@ git push origin feature/your-feature
 
 ---
 
+
+## ✅ Quick Verification
+
+Run this command after setup to verify the core test suite:
+
+```bash
+npm run test
+```
+
+---
+
 ## 📄 License
 
 MIT © 2026 Maitri Hospitality Tech

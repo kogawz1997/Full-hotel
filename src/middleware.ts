@@ -36,10 +36,20 @@ export async function middleware(request: NextRequest) {
   // Optional host split: serve portal and backoffice on separate domains
   if (portalHost && backofficeHost) {
     const isPortalPath = pathname.startsWith('/portal');
-    const targetHost = isPortalPath ? portalHost : backofficeHost;
-    if (host !== targetHost) {
+    const subdomainEnabled = process.env.NEXT_PUBLIC_BACKOFFICE_SUBDOMAIN_ENABLED === 'true';
+    const backofficeHostAllowed = subdomainEnabled
+      ? (host === backofficeHost || host.endsWith(`.${backofficeHost}`))
+      : host === backofficeHost;
+
+    if (isPortalPath) {
+      if (host !== portalHost) {
+        const url = request.nextUrl.clone();
+        url.host = portalHost;
+        return NextResponse.redirect(url);
+      }
+    } else if (!backofficeHostAllowed) {
       const url = request.nextUrl.clone();
-      url.host = targetHost;
+      url.host = backofficeHost;
       return NextResponse.redirect(url);
     }
   }

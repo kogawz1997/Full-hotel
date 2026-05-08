@@ -20,7 +20,12 @@ export default function InternalLoginPage() {
     const error = params.get('error');
     if (error === 'session_expired') setErrorMessage('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
     if (error === '2fa_required') setErrorMessage('บัญชีนี้ต้องยืนยัน 2FA ก่อนใช้งาน');
-    if (!token) { setTokenChecked(true); return; }
+    if (!token) {
+      setTokenValid(false);
+      setErrorMessage('หน้านี้ใช้สำหรับพนักงานที่ได้รับลิงก์จากเจ้าของโรงแรมเท่านั้น');
+      setTokenChecked(true);
+      return;
+    }
 
     fetch('/api/team/staff-login-validate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -62,8 +67,8 @@ export default function InternalLoginPage() {
       </div>
       {!tokenChecked ? <p className="text-sm text-muted-foreground">กำลังตรวจสอบลิงก์พนักงาน...</p> : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input type="email" label="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} required />
-          <Input type="password" label="รหัสผ่าน" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <Input type="email" label="อีเมล" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={!tokenValid} />
+          <Input type="password" label="รหัสผ่าน" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={!tokenValid} />
           <Button type="submit" className="w-full" disabled={loading || !tokenValid}>{loading ? 'กำลังเข้าสู่ระบบ...' : <>เข้าสู่ระบบ<ArrowRight /></>}</Button>
         </form>
       )}
