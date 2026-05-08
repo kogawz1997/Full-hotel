@@ -6,8 +6,10 @@ import { PwaRegister } from '@/components/providers/pwa-register';
 import './globals.css';
 
 const fontVariables = 'font-display-fallback font-sans-fallback font-mono-fallback';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: { default: 'Maitri — Hotel Operating System', template: '%s · Maitri' },
   description: 'AI-first property management for Thai hospitality. Multi-language inbox, channel manager, compliance — built for the way modern hotels work.',
   keywords: ['hotel management', 'PMS', 'Thailand', 'ระบบโรงแรม', 'hotel software'],

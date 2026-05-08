@@ -7,6 +7,7 @@ import { requireHotelAccess } from '@/lib/auth/guards';
 import { createAdminClient } from '@/lib/supabase/server';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
+import { calculateVatBreakdown } from '@/lib/accounting/vat';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -39,8 +40,12 @@ export async function GET(request: NextRequest) {
 
   const subtotal   = folioItems.filter(f => f.amount > 0).reduce((s, f) => s + Number(f.amount), 0);
   const refunds    = folioItems.filter(f => f.amount < 0).reduce((s, f) => s + Number(f.amount), 0);
-  const vatAmount  = subtotal * (Number(hotel?.vat_rate) || 0.07);
-  const totalDue   = subtotal + vatAmount + refunds;
+  const vat = calculateVatBreakdown({
+    positiveItemsTotal: subtotal,
+    adjustments: refunds,
+    vatRate: Number(hotel?.vat_rate) || 0.07,
+  });
+  const totalDue = vat.total;
 
   return NextResponse.json({
     receiptNumber: `REC-${res.reservation_code}`,
@@ -72,11 +77,11 @@ export async function GET(request: NextRequest) {
       type:        f.item_type,
     })),
     summary: {
-      subtotal: Math.round(subtotal * 100) / 100,
-      vatRate: (Number(hotel?.vat_rate) || 0.07) * 100,
-      vatAmount: Math.round(vatAmount * 100) / 100,
-      refunds: Math.round(refunds * 100) / 100,
-      total: Math.round(totalDue * 100) / 100,
+      subtotal: vat.subtotal,
+      vatRate: vat.vatRate * 100,
+      vatAmount: vat.vatAmount,
+      refunds: vat.adjustments,
+      total: vat.total,
       paid: Number(res.paid_amount),
       balance: Math.round((totalDue - Number(res.paid_amount)) * 100) / 100,
     },

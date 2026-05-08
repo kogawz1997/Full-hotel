@@ -65,7 +65,21 @@ export async function POST(request: Request) {
       buyerName ||
       `${reservation.guests.first_name} ${reservation.guests.last_name || ''}`.trim();
 
-    const invoiceNumber = generateInvoiceNumber('ETAX');
+    const now = new Date();
+    const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+    const nextMonthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)).toISOString();
+    const { count: monthlyCount } = await supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true })
+      .eq('hotel_id', reservation.hotel_id)
+      .gte('created_at', monthStart)
+      .lt('created_at', nextMonthStart);
+    const hotelCode = (reservation.hotels?.name || 'HOTEL').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 6) || 'HOTEL';
+    const invoiceNumber = generateInvoiceNumber('ETAX', {
+      date: now,
+      hotelCode,
+      sequence: (monthlyCount || 0) + 1,
+    });
 
     // ✅ create invoice
     const { data: invoice, error } = await supabase

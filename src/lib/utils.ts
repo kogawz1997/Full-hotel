@@ -34,12 +34,22 @@ export function calculateNights(checkIn: Date | string, checkOut: Date | string)
   return Math.ceil((co.getTime() - ci.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export function generateInvoiceNumber(prefix = 'INV'): string {
-  const date = new Date();
+export function generateInvoiceNumber(
+  prefix = 'INV',
+  options?: { date?: Date; sequence?: number; hotelCode?: string }
+): string {
+  const date = options?.date ?? new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
+  const hotelCode = options?.hotelCode ? `${options.hotelCode}-` : '';
+
+  if (typeof options?.sequence === 'number') {
+    const sequence = String(options.sequence).padStart(4, '0');
+    return `${prefix}-${hotelCode}${year}${month}-${sequence}`;
+  }
+
   const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  return `${prefix}${year}${month}${random}`;
+  return `${prefix}-${hotelCode}${year}${month}-${random}`;
 }
 
 // Detect language using simple heuristics + can fall back to AI
